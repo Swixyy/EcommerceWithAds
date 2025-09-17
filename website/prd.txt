@@ -1,0 +1,59 @@
+Product Requirements Document (PRD)
+
+Project Title:
+E-Shop for Technology Products with User Database and Personalized Advertisements
+
+Overview:
+The project is a basic e-commerce web application that allows users to browse and purchase technology-related products. It will include user authentication, a database to store user and product information, and a simple system for personalized advertisements. The goal is to demonstrate core functionality, not to build a production-ready system.
+
+Tech Stack:
+- Frontend: Next.js (React framework)
+- Backend: Next.js API routes
+- Database: PostgreSQL (via Prisma ORM)
+- Styling: TailwindCSS
+- Authentication: NextAuth.js (or similar)
+- Hosting: Localhost or Vercel (for demonstration)
+
+Key Features:
+1. User Management
+   - Sign up / Login / Logout
+   - Profile page displaying user information
+   - Store user preferences in database
+
+2. Product Catalog
+   - View list of technology products
+   - Product detail pages
+   - Basic categories (e.g., laptops, smartphones, accessories)
+
+3. Shopping Cart (basic)
+   - Add to cart
+   - View cart
+   - Remove from cart
+   - (No real payment integration, just a placeholder checkout)
+
+4. Personalized Advertisements
+   - Display ads on homepage or product pages
+   - Ads are selected based on user preferences stored in the database
+   - Example: if a user viewed many laptop products, show laptop-related ads
+
+5. Admin Panel (optional, basic)
+   - Add / edit / delete products
+   - Manage users
+   - Upload advertisements
+
+Non-Functional Requirements:
+- Keep the application simple, focusing on functionality over production readiness
+- Database schema managed with Prisma migrations
+- Minimal design, just enough for usability
+- Basic error handling, no advanced logging or monitoring required
+
+Stretch Goals (if time allows):
+- Implement product search and filters
+- Add order history for users
+- Recommendation system (basic rule-based)
+
+Deliverables:
+- Next.js project repository with Prisma integration
+- Database schema (Prisma schema file)
+- Basic seed data for products and ads
+- Documentation on how to run the app locally
