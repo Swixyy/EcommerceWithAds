@@ -21,7 +21,7 @@ export async function GET() {
       select: { preferences: true }
     })
 
-    const preferences = user?.preferences as any || {}
+    const preferences = user?.preferences as Record<string, unknown> || {}
     const wishlistProductIds = preferences.wishlist || []
 
     if (wishlistProductIds.length === 0) {
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       select: { preferences: true }
     })
 
-    const preferences = user?.preferences as any || {}
+    const preferences = user?.preferences as Record<string, unknown> || {}
     const currentWishlist = preferences.wishlist || []
 
     // Add product to wishlist if not already present
@@ -129,7 +129,7 @@ export async function DELETE(request: NextRequest) {
       select: { preferences: true }
     })
 
-    const preferences = user?.preferences as any || {}
+    const preferences = user?.preferences as Record<string, unknown> || {}
     const currentWishlist = preferences.wishlist || []
 
     // Remove product from wishlist

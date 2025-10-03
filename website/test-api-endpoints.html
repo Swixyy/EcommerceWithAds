@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Endpoints Testing</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .endpoint-group { margin: 15px 0; }
+        .endpoint { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .endpoint.public { border-left: 4px solid #28a745; }
+        .endpoint.protected { border-left: 4px solid #ffc107; }
+        .endpoint.admin { border-left: 4px solid #dc3545; }
+        .method { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; margin-right: 10px; }
+        .GET { background: #28a745; color: white; }
+        .POST { background: #007bff; color: white; }
+        .PUT { background: #ffc107; color: black; }
+        .DELETE { background: #dc3545; color: white; }
+        .status { margin-left: 10px; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+        button { margin: 5px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .results { margin-top: 20px; }
+        .result-item { margin: 5px 0; padding: 8px; border-radius: 4px; }
+        .result-success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .result-error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .result-warning { background: #fff3cd; border: 1px solid #ffeaa7; }
+        .result-info { background: #d1ecf1; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 API Endpoints Testing Suite</h1>
+        
+        <div class="test-section">
+            <h2>Test Controls</h2>
+            <button onclick="testAllEndpoints()">Test All Endpoints</button>
+            <button onclick="testPublicEndpoints()">Test Public Endpoints Only</button>
+            <button onclick="testProtectedEndpoints()">Test Protected Endpoints</button>
+            <button onclick="testAdminEndpoints()">Test Admin Endpoints</button>
+            <button onclick="clearResults()">Clear Results</button>
+        </div>
+
+        <div class="test-section">
+            <h2>Public Endpoints (No Authentication Required)</h2>
+            <div class="endpoint-group">
+                <div class="endpoint public">
+                    <span class="method GET">GET</span>/api/products
+                    <button onclick="testEndpoint('GET', '/api/products')">Test</button>
+                    <span class="status" id="status-/api/products"></span>
+                </div>
+                <div class="endpoint public">
+                    <span class="method GET">GET</span>/api/products/[slug]
+                    <button onclick="testEndpoint('GET', '/api/products/laptop-pro-15')">Test</button>
+                    <span class="status" id="status-/api/products/[slug]"></span>
+                </div>
+                <div class="endpoint public">
+                    <span class="method GET">GET</span>/api/categories
+                    <button onclick="testEndpoint('GET', '/api/categories')">Test</button>
+                    <span class="status" id="status-/api/categories"></span>
+                </div>
+                <div class="endpoint public">
+                    <span class="method POST">POST</span>/api/auth/register
+                    <button onclick="testEndpoint('POST', '/api/auth/register', {email: 'test@example.com', password: 'test123'})">Test</button>
+                    <span class="status" id="status-/api/auth/register"></span>
+                </div>
+                <div class="endpoint public">
+                    <span class="method POST">POST</span>/api/auth/forgot-password
+                    <button onclick="testEndpoint('POST', '/api/auth/forgot-password', {email: 'test@example.com'})">Test</button>
+                    <span class="status" id="status-/api/auth/forgot-password"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Protected Endpoints (Authentication Required)</h2>
+            <div class="endpoint-group">
+                <div class="endpoint protected">
+                    <span class="method GET">GET</span>/api/cart
+                    <button onclick="testEndpoint('GET', '/api/cart')">Test</button>
+                    <span class="status" id="status-/api/cart"></span>
+                </div>
+                <div class="endpoint protected">
+                    <span class="method POST">POST</span>/api/cart
+                    <button onclick="testEndpoint('POST', '/api/cart', {productId: 'test', quantity: 1})">Test</button>
+                    <span class="status" id="status-/api/cart-post"></span>
+                </div>
+                <div class="endpoint protected">
+                    <span class="method GET">GET</span>/api/orders
+                    <button onclick="testEndpoint('GET', '/api/orders')">Test</button>
+                    <span class="status" id="status-/api/orders"></span>
+                </div>
+                <div class="endpoint protected">
+                    <span class="method POST">POST</span>/api/orders
+                    <button onclick="testEndpoint('POST', '/api/orders', {items: [], total: 0})">Test</button>
+                    <span class="status" id="status-/api/orders-post"></span>
+                </div>
+                <div class="endpoint protected">
+                    <span class="method GET">GET</span>/api/user/orders
+                    <button onclick="testEndpoint('GET', '/api/user/orders')">Test</button>
+                    <span class="status" id="status-/api/user/orders"></span>
+                </div>
+                <div class="endpoint protected">
+                    <span class="method GET">GET</span>/api/user/profile
+                    <button onclick="testEndpoint('GET', '/api/user/profile')">Test</button>
+                    <span class="status" id="status-/api/user/profile"></span>
+                </div>
+                <div class="endpoint protected">
+                    <span class="method GET">GET</span>/api/user/preferences
+                    <button onclick="testEndpoint('GET', '/api/user/preferences')">Test</button>
+                    <span class="status" id="status-/api/user/preferences"></span>
+                </div>
+                <div class="endpoint protected">
+                    <span class="method GET">GET</span>/api/user/wishlist
+                    <button onclick="testEndpoint('GET', '/api/user/wishlist')">Test</button>
+                    <span class="status" id="status-/api/user/wishlist"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Admin Endpoints (Admin Authentication Required)</h2>
+            <div class="endpoint-group">
+                <div class="endpoint admin">
+                    <span class="method GET">GET</span>/api/admin/dashboard
+                    <button onclick="testEndpoint('GET', '/api/admin/dashboard')">Test</button>
+                    <span class="status" id="status-/api/admin/dashboard"></span>
+                </div>
+                <div class="endpoint admin">
+                    <span class="method GET">GET</span>/api/admin/products
+                    <button onclick="testEndpoint('GET', '/api/admin/products')">Test</button>
+                    <span class="status" id="status-/api/admin/products"></span>
+                </div>
+                <div class="endpoint admin">
+                    <span class="method GET">GET</span>/api/admin/orders
+                    <button onclick="testEndpoint('GET', '/api/admin/orders')">Test</button>
+                    <span class="status" id="status-/api/admin/orders"></span>
+                </div>
+                <div class="endpoint admin">
+                    <span class="method GET">GET</span>/api/admin/users
+                    <button onclick="testEndpoint('GET', '/api/admin/users')">Test</button>
+                    <span class="status" id="status-/api/admin/users"></span>
+                </div>
+                <div class="endpoint admin">
+                    <span class="method GET">GET</span>/api/admin/ads
+                    <button onclick="testEndpoint('GET', '/api/admin/ads')">Test</button>
+                    <span class="status" id="status-/api/admin/ads"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Advertisement Endpoints</h2>
+            <div class="endpoint-group">
+                <div class="endpoint public">
+                    <span class="method GET">GET</span>/api/ads/recommendations
+                    <button onclick="testEndpoint('GET', '/api/ads/recommendations')">Test</button>
+                    <span class="status" id="status-/api/ads/recommendations"></span>
+                </div>
+                <div class="endpoint public">
+                    <span class="method GET">GET</span>/api/ads/personalized
+                    <button onclick="testEndpoint('GET', '/api/ads/personalized')">Test</button>
+                    <span class="status" id="status-/api/ads/personalized"></span>
+                </div>
+                <div class="endpoint public">
+                    <span class="method POST">POST</span>/api/ads/track
+                    <button onclick="testEndpoint('POST', '/api/ads/track', {adId: 'test', action: 'view'})">Test</button>
+                    <span class="status" id="status-/api/ads/track"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        let testResults = [];
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result-item result-${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function testEndpoint(method, endpoint, data = null) {
+            const statusElement = document.getElementById(`status-${endpoint.replace(/[\/\[\]]/g, '-')}`);
+            if (statusElement) {
+                statusElement.textContent = 'Testing...';
+                statusElement.className = 'status info';
+            }
+
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(endpoint, options);
+                const responseData = await response.json();
+
+                let statusClass, statusText, logMessage;
+                
+                if (response.ok) {
+                    statusClass = 'success';
+                    statusText = `✅ ${response.status}`;
+                    logMessage = `${method} ${endpoint} - SUCCESS (${response.status})`;
+                } else if (response.status === 401) {
+                    statusClass = 'warning';
+                    statusText = `🔒 ${response.status} (Unauthorized - Expected)`;
+                    logMessage = `${method} ${endpoint} - UNAUTHORIZED (${response.status}) - Expected for protected endpoint`;
+                } else if (response.status === 404) {
+                    statusClass = 'warning';
+                    statusText = `❓ ${response.status} (Not Found)`;
+                    logMessage = `${method} ${endpoint} - NOT FOUND (${response.status})`;
+                } else {
+                    statusClass = 'error';
+                    statusText = `❌ ${response.status}`;
+                    logMessage = `${method} ${endpoint} - ERROR (${response.status}): ${responseData.error || 'Unknown error'}`;
+                }
+
+                if (statusElement) {
+                    statusElement.textContent = statusText;
+                    statusElement.className = `status ${statusClass}`;
+                }
+
+                log(logMessage, statusClass === 'success' ? 'success' : statusClass === 'warning' ? 'warning' : 'error');
+
+                testResults.push({
+                    endpoint,
+                    method,
+                    status: response.status,
+                    success: response.ok,
+                    timestamp: new Date()
+                });
+
+            } catch (error) {
+                const statusClass = 'error';
+                const statusText = `💥 Error`;
+                
+                if (statusElement) {
+                    statusElement.textContent = statusText;
+                    statusElement.className = `status ${statusClass}`;
+                }
+
+                log(`${method} ${endpoint} - NETWORK ERROR: ${error.message}`, 'error');
+
+                testResults.push({
+                    endpoint,
+                    method,
+                    status: 'ERROR',
+                    success: false,
+                    error: error.message,
+                    timestamp: new Date()
+                });
+            }
+        }
+
+        async function testAllEndpoints() {
+            log('Starting comprehensive API endpoint testing...', 'info');
+            
+            const endpoints = [
+                // Public endpoints
+                { method: 'GET', url: '/api/products' },
+                { method: 'GET', url: '/api/categories' },
+                { method: 'GET', url: '/api/products/laptop-pro-15' },
+                { method: 'POST', url: '/api/auth/register', data: { email: 'test@example.com', password: 'test123' } },
+                
+                // Protected endpoints (should return 401)
+                { method: 'GET', url: '/api/cart' },
+                { method: 'GET', url: '/api/orders' },
+                { method: 'GET', url: '/api/user/profile' },
+                { method: 'GET', url: '/api/user/preferences' },
+                { method: 'GET', url: '/api/user/wishlist' },
+                
+                // Admin endpoints (should return 401)
+                { method: 'GET', url: '/api/admin/dashboard' },
+                { method: 'GET', url: '/api/admin/products' },
+                { method: 'GET', url: '/api/admin/orders' },
+                { method: 'GET', url: '/api/admin/users' },
+                { method: 'GET', url: '/api/admin/ads' },
+                
+                // Ad endpoints
+                { method: 'GET', url: '/api/ads/recommendations' },
+                { method: 'GET', url: '/api/ads/personalized' },
+                { method: 'POST', url: '/api/ads/track', data: { adId: 'test', action: 'view' } }
+            ];
+
+            for (const endpoint of endpoints) {
+                await testEndpoint(endpoint.method, endpoint.url, endpoint.data);
+                await new Promise(resolve => setTimeout(resolve, 100)); // Small delay between requests
+            }
+
+            // Generate summary
+            const successCount = testResults.filter(r => r.success).length;
+            const totalCount = testResults.length;
+            const errorCount = testResults.filter(r => !r.success && r.status !== 401).length;
+            const unauthorizedCount = testResults.filter(r => r.status === 401).length;
+
+            log(`\n📊 TEST SUMMARY:`, 'info');
+            log(`✅ Successful: ${successCount}/${totalCount}`, 'success');
+            log(`🔒 Unauthorized (Expected): ${unauthorizedCount}`, 'warning');
+            log(`❌ Errors: ${errorCount}`, errorCount > 0 ? 'error' : 'success');
+        }
+
+        function testPublicEndpoints() {
+            log('Testing public endpoints only...', 'info');
+            testEndpoint('GET', '/api/products');
+            testEndpoint('GET', '/api/categories');
+            testEndpoint('GET', '/api/products/laptop-pro-15');
+            testEndpoint('GET', '/api/ads/recommendations');
+            testEndpoint('GET', '/api/ads/personalized');
+        }
+
+        function testProtectedEndpoints() {
+            log('Testing protected endpoints (should return 401)...', 'info');
+            testEndpoint('GET', '/api/cart');
+            testEndpoint('GET', '/api/orders');
+            testEndpoint('GET', '/api/user/profile');
+            testEndpoint('GET', '/api/user/preferences');
+            testEndpoint('GET', '/api/user/wishlist');
+        }
+
+        function testAdminEndpoints() {
+            log('Testing admin endpoints (should return 401)...', 'info');
+            testEndpoint('GET', '/api/admin/dashboard');
+            testEndpoint('GET', '/api/admin/products');
+            testEndpoint('GET', '/api/admin/orders');
+            testEndpoint('GET', '/api/admin/users');
+            testEndpoint('GET', '/api/admin/ads');
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            testResults = [];
+            log('Results cleared', 'info');
+        }
+
+        // Auto-start basic test
+        window.addEventListener('load', () => {
+            log('API Endpoint Testing Suite loaded. Click buttons to run tests.', 'success');
+            log('Expected behavior: Public endpoints should work, protected/admin endpoints should return 401', 'info');
+        });
+    </script>
+</body>
+</html>

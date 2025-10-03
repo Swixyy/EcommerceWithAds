@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         shippingAddress: shippingAddress,
         paymentMethod: paymentMethod || "card",
         items: {
-          create: items.map((item: any) => ({
+          create: items.map((item: { productId: string; quantity: number; price: number }) => ({
             productId: item.productId,
             quantity: item.quantity,
             price: item.price
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     

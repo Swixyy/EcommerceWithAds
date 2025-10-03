@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Functionality Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .loading { background-color: #fff3cd; border-color: #ffeaa7; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Ecommerce Server Functionality Tests</h1>
+    
+    <div class="test-section">
+        <h2>Basic Server Tests</h2>
+        <button onclick="testHomePage()">Test Home Page</button>
+        <button onclick="testProductsPage()">Test Products Page</button>
+        <button onclick="testCategoriesPage()">Test Categories Page</button>
+        <div id="basic-tests" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>API Endpoint Tests</h2>
+        <button onclick="testAPIEndpoints()">Test All API Endpoints</button>
+        <div id="api-tests" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Database Connection Test</h2>
+        <button onclick="testDatabaseConnection()">Test Database</button>
+        <div id="db-tests" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Authentication Tests</h2>
+        <button onclick="testAuthPages()">Test Auth Pages</button>
+        <div id="auth-tests" class="result"></div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:3000';
+        
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, options);
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    url: url
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                    url: url
+                };
+            }
+        }
+
+        async function testHomePage() {
+            const result = await makeRequest(baseUrl);
+            displayResult('basic-tests', result, 'Home Page');
+        }
+
+        async function testProductsPage() {
+            const result = await makeRequest(`${baseUrl}/products`);
+            displayResult('basic-tests', result, 'Products Page');
+        }
+
+        async function testCategoriesPage() {
+            const result = await makeRequest(`${baseUrl}/categories`);
+            displayResult('basic-tests', result, 'Categories Page');
+        }
+
+        async function testAPIEndpoints() {
+            const endpoints = [
+                '/api/products',
+                '/api/categories',
+                '/api/cart',
+                '/api/orders',
+                '/api/ads/recommendations',
+                '/api/ads/personalized',
+                '/api/auth/signin',
+                '/api/user/profile'
+            ];
+
+            let results = [];
+            for (const endpoint of endpoints) {
+                const result = await makeRequest(`${baseUrl}${endpoint}`);
+                results.push({ endpoint, ...result });
+            }
+
+            let html = '<h3>API Endpoint Results:</h3>';
+            results.forEach(result => {
+                const status = result.success ? '✅' : '❌';
+                const statusText = result.success ? 
+                    `Status: ${result.status}` : 
+                    `Error: ${result.error || result.statusText}`;
+                html += `<div>${status} <strong>${result.endpoint}</strong> - ${statusText}</div>`;
+            });
+            
+            document.getElementById('api-tests').innerHTML = html;
+        }
+
+        async function testDatabaseConnection() {
+            // Test database through API endpoints that require DB
+            const result = await makeRequest(`${baseUrl}/api/products`);
+            displayResult('db-tests', result, 'Database Connection (via Products API)');
+        }
+
+        async function testAuthPages() {
+            const authPages = [
+                '/auth/signin',
+                '/auth/signup',
+                '/auth/forgot-password'
+            ];
+
+            let results = [];
+            for (const page of authPages) {
+                const result = await makeRequest(`${baseUrl}${page}`);
+                results.push({ page, ...result });
+            }
+
+            let html = '<h3>Authentication Pages:</h3>';
+            results.forEach(result => {
+                const status = result.success ? '✅' : '❌';
+                const statusText = result.success ? 
+                    `Status: ${result.status}` : 
+                    `Error: ${result.error || result.statusText}`;
+                html += `<div>${status} <strong>${result.page}</strong> - ${statusText}</div>`;
+            });
+            
+            document.getElementById('auth-tests').innerHTML = html;
+        }
+
+        function displayResult(elementId, result, testName) {
+            const element = document.getElementById(elementId);
+            const status = result.success ? '✅' : '❌';
+            const statusText = result.success ? 
+                `Status: ${result.status}` : 
+                `Error: ${result.error || result.statusText}`;
+            
+            element.innerHTML = `<div>${status} <strong>${testName}</strong> - ${statusText}</div>`;
+        }
+
+        // Auto-run basic tests on page load
+        window.onload = function() {
+            testHomePage();
+            setTimeout(testProductsPage, 1000);
+            setTimeout(testCategoriesPage, 2000);
+        };
+    </script>
+</body>
+</html>

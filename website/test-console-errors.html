@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Console Error Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 JavaScript Console Error Tester</h1>
+    
+    <div class="test-section">
+        <h2>Test Website Endpoints</h2>
+        <button onclick="testHomePage()">Test Home Page</button>
+        <button onclick="testProductsAPI()">Test Products API</button>
+        <button onclick="testCategoriesAPI()">Test Categories API</button>
+        <button onclick="testCartAPI()">Test Cart API</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Common JavaScript Patterns</h2>
+        <button onclick="testArrayMethods()">Test Array Methods</button>
+        <button onclick="testAsyncOperations()">Test Async Operations</button>
+        <button onclick="testErrorHandling()">Test Error Handling</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Monitor Console</h2>
+        <button onclick="startConsoleMonitoring()">Start Console Monitoring</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        let consoleErrors = [];
+        let originalConsoleError = console.error;
+        let originalConsoleWarn = console.warn;
+
+        // Override console methods to capture errors
+        console.error = function(...args) {
+            consoleErrors.push({ type: 'error', message: args.join(' '), timestamp: new Date() });
+            originalConsoleError.apply(console, args);
+            updateResults();
+        };
+
+        console.warn = function(...args) {
+            consoleErrors.push({ type: 'warn', message: args.join(' '), timestamp: new Date() });
+            originalConsoleWarn.apply(console, args);
+            updateResults();
+        };
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+        }
+
+        function updateResults() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>Console Errors/Warnings Captured:</h3>';
+            
+            if (consoleErrors.length === 0) {
+                log('No console errors detected!', 'success');
+            } else {
+                consoleErrors.forEach(error => {
+                    log(`[${error.type.toUpperCase()}] ${error.message}`, error.type);
+                });
+            }
+        }
+
+        async function testHomePage() {
+            log('Testing home page...', 'info');
+            try {
+                const response = await fetch('/');
+                if (response.ok) {
+                    log('Home page loaded successfully', 'success');
+                } else {
+                    log(`Home page failed with status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`Home page error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testProductsAPI() {
+            log('Testing products API...', 'info');
+            try {
+                const response = await fetch('/api/products');
+                const data = await response.json();
+                if (response.ok) {
+                    log(`Products API successful - ${data.length} products`, 'success');
+                } else {
+                    log(`Products API failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Products API error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCategoriesAPI() {
+            log('Testing categories API...', 'info');
+            try {
+                const response = await fetch('/api/categories');
+                const data = await response.json();
+                if (response.ok) {
+                    log(`Categories API successful - ${data.length} categories`, 'success');
+                } else {
+                    log(`Categories API failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Categories API error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCartAPI() {
+            log('Testing cart API...', 'info');
+            try {
+                const response = await fetch('/api/cart');
+                if (response.status === 401) {
+                    log('Cart API correctly requires authentication', 'success');
+                } else if (response.ok) {
+                    log('Cart API successful', 'success');
+                } else {
+                    log(`Cart API failed with status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`Cart API error: ${error.message}`, 'error');
+            }
+        }
+
+        function testArrayMethods() {
+            log('Testing array methods...', 'info');
+            
+            // Test .map() with potentially undefined array
+            try {
+                const products = null;
+                const mapped = products?.map(p => p.name) || [];
+                log('Array .map() with null check successful', 'success');
+            } catch (error) {
+                log(`Array .map() error: ${error.message}`, 'error');
+            }
+
+            // Test .reduce() with empty array
+            try {
+                const items = [];
+                const total = items.reduce((sum, item) => sum + item.price, 0);
+                log(`Array .reduce() with empty array successful: ${total}`, 'success');
+            } catch (error) {
+                log(`Array .reduce() error: ${error.message}`, 'error');
+            }
+
+            // Test .filter()
+            try {
+                const categories = [{ id: 1, active: true }, { id: 2, active: false }];
+                const active = categories.filter(c => c.active);
+                log(`Array .filter() successful: ${active.length} active categories`, 'success');
+            } catch (error) {
+                log(`Array .filter() error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAsyncOperations() {
+            log('Testing async operations...', 'info');
+            
+            try {
+                // Test Promise.all with potential failures
+                const promises = [
+                    fetch('/api/products').catch(e => ({ error: e.message })),
+                    fetch('/api/categories').catch(e => ({ error: e.message }))
+                ];
+                
+                const results = await Promise.all(promises);
+                const successCount = results.filter(r => !r.error).length;
+                log(`Async operations: ${successCount}/${results.length} successful`, 'success');
+            } catch (error) {
+                log(`Async operations error: ${error.message}`, 'error');
+            }
+        }
+
+        function testErrorHandling() {
+            log('Testing error handling...', 'info');
+            
+            // Test try-catch blocks
+            try {
+                JSON.parse('invalid json');
+            } catch (error) {
+                log('JSON parse error handling works', 'success');
+            }
+
+            // Test async error handling
+            async function testAsyncError() {
+                throw new Error('Test async error');
+            }
+            
+            testAsyncError().catch(error => {
+                log('Async error handling works', 'success');
+            });
+        }
+
+        function startConsoleMonitoring() {
+            log('Console monitoring started. Check browser dev tools console for real-time errors.', 'info');
+            log('Navigate to different pages to trigger potential JavaScript errors.', 'info');
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            consoleErrors = [];
+            log('Results cleared', 'info');
+        }
+
+        // Auto-start monitoring
+        window.addEventListener('error', function(e) {
+            log(`Global error: ${e.message} at ${e.filename}:${e.lineno}`, 'error');
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            log(`Unhandled promise rejection: ${e.reason}`, 'error');
+        });
+
+        // Initial load
+        log('JavaScript Console Error Tester loaded. Click buttons to run tests.', 'success');
+    </script>
+</body>
+</html>

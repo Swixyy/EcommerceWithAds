@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -14,9 +14,10 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const { id } = await params
     const order = await prisma.order.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id
       },
       include: {
@@ -51,7 +52,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -69,9 +70,10 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid status" }, { status: 400 })
     }
 
+    const { id } = await params
     const order = await prisma.order.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id
       }
     })
@@ -82,7 +84,7 @@ export async function PATCH(
 
     const updatedOrder = await prisma.order.update({
       where: {
-        id: params.id
+        id
       },
       data: {
         ...(status && { status })

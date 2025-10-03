@@ -116,7 +116,7 @@ async function main() {
           id: "ad-laptop-sale",
           title: "Laptop Sale - Up to 30% Off!",
           description: "Get the latest laptops at unbeatable prices",
-          image: "/images/ads/laptop-sale.jpg",
+          image: "/images/ads/laptop-sale.svg",
           link: "/products?category=laptops",
           targetCategory: "laptops",
           active: true,

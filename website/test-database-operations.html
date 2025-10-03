@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Operations Testing</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .operation { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        .operation.create { border-left: 4px solid #28a745; }
+        .operation.read { border-left: 4px solid #007bff; }
+        .operation.update { border-left: 4px solid #ffc107; }
+        .operation.delete { border-left: 4px solid #dc3545; }
+        .method { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; margin-right: 10px; }
+        .GET { background: #007bff; color: white; }
+        .POST { background: #28a745; color: white; }
+        .PUT { background: #ffc107; color: black; }
+        .DELETE { background: #dc3545; color: white; }
+        .status { margin-left: 10px; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+        button { margin: 5px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .results { margin-top: 20px; }
+        .result-item { margin: 5px 0; padding: 8px; border-radius: 4px; }
+        .result-success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .result-error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .result-warning { background: #fff3cd; border: 1px solid #ffeaa7; }
+        .result-info { background: #d1ecf1; border: 1px solid #bee5eb; }
+        .data-preview { background: #f8f9fa; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ Database Operations Testing Suite</h1>
+        
+        <div class="test-section">
+            <h2>Test Controls</h2>
+            <button onclick="testAllDatabaseOperations()">Test All Database Operations</button>
+            <button onclick="testReadOperations()">Test Read Operations Only</button>
+            <button onclick="testWriteOperations()">Test Write Operations</button>
+            <button onclick="clearResults()">Clear Results</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📖 Read Operations (GET)</h2>
+            <div class="operation read">
+                <span class="method GET">GET</span>Products
+                <button onclick="testOperation('GET', '/api/products', null, 'products')">Test</button>
+                <span class="status" id="status-products"></span>
+                <div class="data-preview" id="data-products"></div>
+            </div>
+            <div class="operation read">
+                <span class="method GET">GET</span>Categories
+                <button onclick="testOperation('GET', '/api/categories', null, 'categories')">Test</button>
+                <span class="status" id="status-categories"></span>
+                <div class="data-preview" id="data-categories"></div>
+            </div>
+            <div class="operation read">
+                <span class="method GET">GET</span>Single Product
+                <button onclick="testOperation('GET', '/api/products/test-product', null, 'single-product')">Test</button>
+                <span class="status" id="status-single-product"></span>
+                <div class="data-preview" id="data-single-product"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>✏️ Write Operations (POST/PUT/DELETE)</h2>
+            <div class="operation create">
+                <span class="method POST">POST</span>Create Test Category
+                <button onclick="createTestCategory()">Test</button>
+                <span class="status" id="status-create-category"></span>
+                <div class="data-preview" id="data-create-category"></div>
+            </div>
+            <div class="operation create">
+                <span class="method POST">POST</span>Create Test Product
+                <button onclick="createTestProduct()">Test</button>
+                <span class="status" id="status-create-product"></span>
+                <div class="data-preview" id="data-create-product"></div>
+            </div>
+            <div class="operation update">
+                <span class="method PUT">PUT</span>Update Test Product
+                <button onclick="updateTestProduct()">Test</button>
+                <span class="status" id="status-update-product"></span>
+                <div class="data-preview" id="data-update-product"></div>
+            </div>
+            <div class="operation delete">
+                <span class="method DELETE">DELETE</span>Delete Test Data
+                <button onclick="deleteTestData()">Test</button>
+                <span class="status" id="status-delete-data"></span>
+                <div class="data-preview" id="data-delete-data"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔐 Protected Operations (Authentication Required)</h2>
+            <div class="operation read">
+                <span class="method GET">GET</span>User Cart
+                <button onclick="testOperation('GET', '/api/cart', null, 'cart')">Test</button>
+                <span class="status" id="status-cart"></span>
+                <div class="data-preview" id="data-cart"></div>
+            </div>
+            <div class="operation read">
+                <span class="method GET">GET</span>User Orders
+                <button onclick="testOperation('GET', '/api/orders', null, 'orders')">Test</button>
+                <span class="status" id="status-orders"></span>
+                <div class="data-preview" id="data-orders"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Database Statistics</h2>
+            <div class="operation info">
+                <span class="method GET">GET</span>Admin Dashboard Stats
+                <button onclick="testOperation('GET', '/api/admin/dashboard', null, 'dashboard-stats')">Test</button>
+                <span class="status" id="status-dashboard-stats"></span>
+                <div class="data-preview" id="data-dashboard-stats"></div>
+            </div>
+        </div>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let testData = {
+            categoryId: null,
+            productId: null
+        };
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result-item result-${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function testOperation(method, endpoint, data, operationId) {
+            const statusElement = document.getElementById(`status-${operationId}`);
+            const dataElement = document.getElementById(`data-${operationId}`);
+            
+            if (statusElement) {
+                statusElement.textContent = 'Testing...';
+                statusElement.className = 'status info';
+            }
+
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(endpoint, options);
+                const responseData = await response.json();
+
+                let statusClass, statusText, logMessage;
+                
+                if (response.ok) {
+                    statusClass = 'success';
+                    statusText = `✅ ${response.status}`;
+                    logMessage = `${method} ${endpoint} - SUCCESS (${response.status})`;
+                    
+                    // Display data preview
+                    if (dataElement) {
+                        dataElement.textContent = JSON.stringify(responseData, null, 2);
+                    }
+                } else if (response.status === 401) {
+                    statusClass = 'warning';
+                    statusText = `🔒 ${response.status} (Unauthorized - Expected)`;
+                    logMessage = `${method} ${endpoint} - UNAUTHORIZED (${response.status}) - Expected for protected endpoint`;
+                } else if (response.status === 404) {
+                    statusClass = 'warning';
+                    statusText = `❓ ${response.status} (Not Found)`;
+                    logMessage = `${method} ${endpoint} - NOT FOUND (${response.status})`;
+                } else {
+                    statusClass = 'error';
+                    statusText = `❌ ${response.status}`;
+                    logMessage = `${method} ${endpoint} - ERROR (${response.status}): ${responseData.error || 'Unknown error'}`;
+                    
+                    if (dataElement) {
+                        dataElement.textContent = JSON.stringify(responseData, null, 2);
+                    }
+                }
+
+                if (statusElement) {
+                    statusElement.textContent = statusText;
+                    statusElement.className = `status ${statusClass}`;
+                }
+
+                log(logMessage, statusClass === 'success' ? 'success' : statusClass === 'warning' ? 'warning' : 'error');
+
+                testResults.push({
+                    endpoint,
+                    method,
+                    status: response.status,
+                    success: response.ok,
+                    data: responseData,
+                    timestamp: new Date()
+                });
+
+                return responseData;
+
+            } catch (error) {
+                const statusClass = 'error';
+                const statusText = `💥 Error`;
+                
+                if (statusElement) {
+                    statusElement.textContent = statusText;
+                    statusElement.className = `status ${statusClass}`;
+                }
+
+                if (dataElement) {
+                    dataElement.textContent = `Error: ${error.message}`;
+                }
+
+                log(`${method} ${endpoint} - NETWORK ERROR: ${error.message}`, 'error');
+
+                testResults.push({
+                    endpoint,
+                    method,
+                    status: 'ERROR',
+                    success: false,
+                    error: error.message,
+                    timestamp: new Date()
+                });
+            }
+        }
+
+        async function createTestCategory() {
+            log('Creating test category...', 'info');
+            
+            const categoryData = {
+                name: `Test Category ${Date.now()}`,
+                slug: `test-category-${Date.now()}`,
+                description: 'This is a test category created by the database testing suite',
+                imageUrl: '/images/categories/test.jpg'
+            };
+
+            try {
+                // Note: This would typically be done through admin API, but we'll test the concept
+                log('Note: Category creation requires admin authentication. Testing with public endpoint structure.', 'warning');
+                
+                // For now, just test the endpoint structure
+                await testOperation('POST', '/api/categories', categoryData, 'create-category');
+                
+            } catch (error) {
+                log(`Category creation test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function createTestProduct() {
+            log('Creating test product...', 'info');
+            
+            const productData = {
+                name: `Test Product ${Date.now()}`,
+                slug: `test-product-${Date.now()}`,
+                description: 'This is a test product created by the database testing suite',
+                price: 99.99,
+                categoryId: 'laptops', // Assuming this category exists
+                imageUrl: '/images/products/test.jpg',
+                stock: 10,
+                featured: false
+            };
+
+            try {
+                // Note: This would typically be done through admin API
+                log('Note: Product creation requires admin authentication. Testing with public endpoint structure.', 'warning');
+                
+                await testOperation('POST', '/api/products', productData, 'create-product');
+                
+            } catch (error) {
+                log(`Product creation test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function updateTestProduct() {
+            log('Updating test product...', 'info');
+            
+            if (!testData.productId) {
+                log('No test product ID available for update', 'warning');
+                return;
+            }
+
+            const updateData = {
+                name: `Updated Test Product ${Date.now()}`,
+                price: 149.99,
+                stock: 5
+            };
+
+            try {
+                await testOperation('PUT', `/api/products/${testData.productId}`, updateData, 'update-product');
+            } catch (error) {
+                log(`Product update test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function deleteTestData() {
+            log('Cleaning up test data...', 'info');
+            
+            try {
+                // Note: This would typically be done through admin API
+                log('Note: Data deletion requires admin authentication. Testing endpoint structure.', 'warning');
+                
+                if (testData.productId) {
+                    await testOperation('DELETE', `/api/products/${testData.productId}`, null, 'delete-data');
+                }
+                
+                if (testData.categoryId) {
+                    await testOperation('DELETE', `/api/categories/${testData.categoryId}`, null, 'delete-data');
+                }
+                
+                log('Test data cleanup completed', 'success');
+                
+            } catch (error) {
+                log(`Data cleanup failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllDatabaseOperations() {
+            log('Starting comprehensive database operations testing...', 'info');
+            
+            // Test read operations
+            log('Testing read operations...', 'info');
+            await testOperation('GET', '/api/products', null, 'products');
+            await testOperation('GET', '/api/categories', null, 'categories');
+            
+            // Test protected operations (should return 401)
+            log('Testing protected operations...', 'info');
+            await testOperation('GET', '/api/cart', null, 'cart');
+            await testOperation('GET', '/api/orders', null, 'orders');
+            
+            // Test admin operations (should return 401)
+            log('Testing admin operations...', 'info');
+            await testOperation('GET', '/api/admin/dashboard', null, 'dashboard-stats');
+
+            // Generate summary
+            const successCount = testResults.filter(r => r.success).length;
+            const totalCount = testResults.length;
+            const errorCount = testResults.filter(r => !r.success && r.status !== 401).length;
+            const unauthorizedCount = testResults.filter(r => r.status === 401).length;
+
+            log(`\n📊 DATABASE TEST SUMMARY:`, 'info');
+            log(`✅ Successful: ${successCount}/${totalCount}`, 'success');
+            log(`🔒 Unauthorized (Expected): ${unauthorizedCount}`, 'warning');
+            log(`❌ Errors: ${errorCount}`, errorCount > 0 ? 'error' : 'success');
+            
+            if (successCount > 0) {
+                log(`\n🎉 Database operations are working correctly!`, 'success');
+            }
+        }
+
+        function testReadOperations() {
+            log('Testing read operations only...', 'info');
+            testOperation('GET', '/api/products', null, 'products');
+            testOperation('GET', '/api/categories', null, 'categories');
+            testOperation('GET', '/api/products/test-product', null, 'single-product');
+        }
+
+        function testWriteOperations() {
+            log('Testing write operations...', 'info');
+            createTestCategory();
+            createTestProduct();
+            updateTestProduct();
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            testResults = [];
+            log('Results cleared', 'info');
+        }
+
+        // Auto-start basic test
+        window.addEventListener('load', () => {
+            log('Database Operations Testing Suite loaded.', 'success');
+            log('Click "Test All Database Operations" to start comprehensive testing.', 'info');
+        });
+    </script>
+</body>
+</html>

@@ -5,7 +5,7 @@ import { updateAdvertisement, deleteAdvertisement } from "@/lib/database"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,8 +18,9 @@ export async function PUT(
     }
 
     const { title, imageUrl, link, targetAudience } = await request.json()
+    const { id } = await params
 
-    const advertisement = await updateAdvertisement(params.id, {
+    const advertisement = await updateAdvertisement(id, {
       title,
       imageUrl,
       link,
@@ -39,7 +40,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -51,7 +52,8 @@ export async function DELETE(
       )
     }
 
-    await deleteAdvertisement(params.id)
+    const { id } = await params
+    await deleteAdvertisement(id)
 
     return NextResponse.json({ message: "Advertisement deleted" })
 

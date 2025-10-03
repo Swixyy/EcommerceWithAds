@@ -51,7 +51,12 @@ export async function PUT(request: NextRequest) {
       select: { preferences: true }
     })
 
-    const updateData: any = {}
+    const updateData: {
+      viewedCategories?: string[]
+      favoriteCategories?: string[]
+      adPreferences?: string[]
+      newsletter?: boolean
+    } = {}
     
     if (viewedCategories !== undefined) {
       updateData.viewedCategories = viewedCategories
@@ -67,7 +72,7 @@ export async function PUT(request: NextRequest) {
       where: { id: session.user.id },
       data: {
         preferences: {
-          ...(currentUser?.preferences as any || {}),
+          ...(currentUser?.preferences as Record<string, unknown> || {}),
           ...updateData
         }
       },

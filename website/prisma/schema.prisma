@@ -1,12 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -23,8 +20,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -38,20 +34,19 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String     @unique
   emailVerified DateTime?
   image         String?
-  password      String?   // For credentials authentication
-  preferences   Json?     // Store user preferences for personalized ads
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  accounts Account[]
-  sessions Session[]
-  cartItems CartItem[]
-  orders   Order[]
+  password      String?
+  preferences   Json?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  accounts      Account[]
+  cartItems     CartItem[]
+  orders        Order[]
+  sessions      Session[]
 }
 
 model VerificationToken {
@@ -69,26 +64,24 @@ model Category {
   slug        String    @unique
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
-  products Product[]
+  products    Product[]
 }
 
 model Product {
-  id          String    @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   description String?
   price       Float
   image       String?
-  slug        String    @unique
-  stock       Int       @default(0)
-  featured    Boolean   @default(false)
+  slug        String      @unique
+  stock       Int         @default(0)
+  featured    Boolean     @default(false)
   categoryId  String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  category   Category   @relation(fields: [categoryId], references: [id])
-  cartItems  CartItem[]
-  orderItems OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  category    Category    @relation(fields: [categoryId], references: [id])
 }
 
 model CartItem {
@@ -98,9 +91,8 @@ model CartItem {
   quantity  Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
 }
@@ -112,32 +104,30 @@ model Order {
   status    OrderStatus @default(PENDING)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-
-  user  User        @relation(fields: [userId], references: [id])
-  items OrderItem[]
+  user      User        @relation(fields: [userId], references: [id])
+  items     OrderItem[]
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   orderId   String
   productId String
   quantity  Int
   price     Float
-
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 model Advertisement {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  image       String
-  link        String?
-  targetCategory String? // Category to target for personalized ads
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  image          String
+  link           String?
+  targetCategory String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 enum OrderStatus {
