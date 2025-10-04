@@ -196,48 +196,274 @@ export async function clearCart(userId: string) {
   })
 }
 
-export async function getPersonalizedAdvertisement(userPreferences: Record<string, unknown>, position: string) {
-  // In a real app, this would use sophisticated targeting logic
-  // For now, we'll return a mock advertisement based on position
-  const mockAds = {
-    top: {
-      id: "ad-top-1",
-      title: "🔥 Flash Sale: Up to 50% Off Laptops!",
-      imageUrl: "/images/ads/laptop-sale.svg",
-      link: "/products?category=laptops&sale=true"
+export async function getPersonalizedAdvertisement(userPreferences: Record<string, unknown> | null, position: string) {
+  // Real personalization logic based on user preferences
+  const preferences = userPreferences as {
+    viewedCategories?: string[]
+    favoriteCategories?: string[]
+    adPreferences?: string[]
+  } | null
+
+  // Define ad campaigns for different categories and positions
+  const adCampaigns = {
+    laptops: {
+      top: {
+        id: "ad-laptops-top",
+        title: "🔥 Flash Sale: Up to 50% Off Gaming Laptops!",
+        imageUrl: "/images/ads/laptop-sale.svg",
+        link: "/products?category=laptops&sale=true"
+      },
+      bottom: {
+        id: "ad-laptops-bottom",
+        title: "💻 New MacBook Pro 16\" - Pre-order Today!",
+        imageUrl: "/images/ads/macbook-pro.svg",
+        link: "/products?category=laptops&featured=true"
+      },
+      sidebar: {
+        id: "ad-laptops-sidebar",
+        title: "🎮 Gaming Laptops Starting at $999",
+        imageUrl: "/images/ads/gaming-laptop.svg",
+        link: "/products?category=laptops"
+      }
     },
-    bottom: {
-      id: "ad-bottom-1", 
-      title: "📱 New iPhone 15 Pro - Pre-order Now!",
-      imageUrl: "/images/ads/iphone-15.jpg",
-      link: "/products?category=smartphones&featured=true"
+    smartphones: {
+      top: {
+        id: "ad-smartphones-top",
+        title: "📱 New iPhone 15 Pro - Pre-order Now!",
+        imageUrl: "/images/ads/iphone-15.svg",
+        link: "/products?category=smartphones&featured=true"
+      },
+      bottom: {
+        id: "ad-smartphones-bottom",
+        title: "🌟 Samsung Galaxy S24 Ultra - Latest Features!",
+        imageUrl: "/images/ads/samsung-galaxy.svg",
+        link: "/products?category=smartphones&sale=true"
+      },
+      sidebar: {
+        id: "ad-smartphones-sidebar",
+        title: "📲 Premium Smartphones Collection",
+        imageUrl: "/images/ads/smartphones.svg",
+        link: "/products?category=smartphones"
+      }
     },
-    sidebar: {
-      id: "ad-sidebar-1",
-      title: "🎧 Premium Headphones",
-      imageUrl: "/images/ads/headphones.jpg", 
-      link: "/products?category=accessories&featured=true"
+    accessories: {
+      top: {
+        id: "ad-accessories-top",
+        title: "🎧 Premium Headphones - 30% Off!",
+        imageUrl: "/images/ads/headphones.svg",
+        link: "/products?category=accessories&sale=true"
+      },
+      bottom: {
+        id: "ad-accessories-bottom",
+        title: "⌚ Smart Watches & Fitness Trackers",
+        imageUrl: "/images/ads/smart-watch.svg",
+        link: "/products?category=accessories&featured=true"
+      },
+      sidebar: {
+        id: "ad-accessories-sidebar",
+        title: "🔌 USB-C Hubs & Chargers",
+        imageUrl: "/images/ads/accessories.svg",
+        link: "/products?category=accessories"
+      }
+    },
+    gaming: {
+      top: {
+        id: "ad-gaming-top",
+        title: "🎮 Gaming Console Sale - PS5 & Xbox!",
+        imageUrl: "/images/ads/gaming-consoles.svg",
+        link: "/products?category=gaming&sale=true"
+      },
+      bottom: {
+        id: "ad-gaming-bottom",
+        title: "🕹️ Gaming Accessories & Controllers",
+        imageUrl: "/images/ads/gaming-accessories.svg",
+        link: "/products?category=gaming&featured=true"
+      },
+      sidebar: {
+        id: "ad-gaming-sidebar",
+        title: "🎯 Gaming Laptops RTX 4080",
+        imageUrl: "/images/ads/gaming-laptops.svg",
+        link: "/products?category=gaming"
+      }
+    },
+    tablets: {
+      top: {
+        id: "ad-tablets-top",
+        title: "📱 iPad Pro 12.9\" - Latest Model!",
+        imageUrl: "/images/ads/ipad-pro.svg",
+        link: "/products?category=tablets&featured=true"
+      },
+      bottom: {
+        id: "ad-tablets-bottom",
+        title: "📊 Samsung Tab S9 Ultra - Productivity Power!",
+        imageUrl: "/images/ads/samsung-tab.svg",
+        link: "/products?category=tablets&sale=true"
+      },
+      sidebar: {
+        id: "ad-tablets-sidebar",
+        title: "📱 Premium Tablets Collection",
+        imageUrl: "/images/ads/tablets.svg",
+        link: "/products?category=tablets"
+      }
+    },
+    headphones: {
+      top: {
+        id: "ad-headphones-top",
+        title: "🎧 Sony WH-1000XM5 - Noise Canceling!",
+        imageUrl: "/images/ads/sony-headphones.svg",
+        link: "/products?category=headphones&featured=true"
+      },
+      bottom: {
+        id: "ad-headphones-bottom",
+        title: "🔊 Bose QuietComfort 45 - Premium Audio",
+        imageUrl: "/images/ads/bose-headphones.svg",
+        link: "/products?category=headphones&sale=true"
+      },
+      sidebar: {
+        id: "ad-headphones-sidebar",
+        title: "🎵 Premium Audio Headphones",
+        imageUrl: "/images/ads/headphones.svg",
+        link: "/products?category=headphones"
+      }
     }
   }
 
-  return mockAds[position as keyof typeof mockAds] || mockAds.top
+  // Default ads for users without preferences
+  const defaultAds = {
+    top: {
+      id: "ad-default-top",
+      title: "🔥 Tech Sale - Up to 50% Off Everything!",
+      imageUrl: "/images/ads/tech-sale.svg",
+      link: "/products?sale=true"
+    },
+    bottom: {
+      id: "ad-default-bottom",
+      title: "💡 Discover Latest Technology Products",
+      imageUrl: "/images/ads/tech-bundle.svg",
+      link: "/products?featured=true"
+    },
+    sidebar: {
+      id: "ad-default-sidebar",
+      title: "🛍️ Shop by Category",
+      imageUrl: "/images/ads/categories.svg",
+      link: "/categories"
+    }
+  }
+
+  // Personalization logic
+  if (!preferences || !preferences.favoriteCategories || preferences.favoriteCategories.length === 0) {
+    // No preferences - return default ads
+    return defaultAds[position as keyof typeof defaultAds] || defaultAds.top
+  }
+
+  // Find the most relevant category based on user preferences
+  const favoriteCategory = preferences.favoriteCategories[0]
+  const viewedCategories = preferences.viewedCategories || []
+  
+  // Check if user has viewed specific categories recently
+  let targetCategory = favoriteCategory
+  
+  // If user has viewed other categories recently, consider them too
+  if (viewedCategories.length > 0) {
+    const recentCategory = viewedCategories[viewedCategories.length - 1]
+    // 70% chance to show ad for recently viewed category, 30% for favorite
+    targetCategory = Math.random() < 0.7 ? recentCategory : favoriteCategory
+  }
+
+  // Get ad for the target category and position
+  const categoryAds = adCampaigns[targetCategory as keyof typeof adCampaigns]
+  if (categoryAds && categoryAds[position as keyof typeof categoryAds]) {
+    return categoryAds[position as keyof typeof categoryAds]
+  }
+
+  // Fallback to default if category not found
+  return defaultAds[position as keyof typeof defaultAds] || defaultAds.top
 }
 
-export async function getPersonalizedRecommendations(userPreferences: Record<string, unknown>, limit: number) {
-  // In a real app, this would use ML algorithms and user behavior data
-  // For now, we'll return featured products as recommendations
-  return await prisma.product.findMany({
+export async function getPersonalizedRecommendations(userPreferences: Record<string, unknown> | null, limit: number) {
+  // Real personalization logic for product recommendations
+  const preferences = userPreferences as {
+    viewedCategories?: string[]
+    favoriteCategories?: string[]
+    adPreferences?: string[]
+  } | null
+
+  // If no preferences, return featured products
+  if (!preferences || !preferences.favoriteCategories || preferences.favoriteCategories.length === 0) {
+    return await prisma.product.findMany({
+      where: { featured: true },
+      include: { category: true },
+      take: limit,
+      orderBy: { createdAt: "desc" }
+    })
+  }
+
+  // Get products from favorite categories first
+  const favoriteCategoryProducts = await prisma.product.findMany({
     where: {
-      featured: true
+      category: {
+        slug: {
+          in: preferences.favoriteCategories
+        }
+      }
     },
-    include: {
-      category: true
-    },
-    take: limit,
-    orderBy: {
-      createdAt: 'desc'
-    }
+    include: { category: true },
+    take: Math.ceil(limit * 0.7), // 70% from favorite categories
+    orderBy: { createdAt: "desc" }
   })
+
+  // Get products from recently viewed categories
+  const viewedCategories = preferences.viewedCategories || []
+  let viewedCategoryProducts: any[] = []
+  
+  if (viewedCategories.length > 0) {
+    viewedCategoryProducts = await prisma.product.findMany({
+      where: {
+        category: {
+          slug: {
+            in: viewedCategories
+          }
+        },
+        id: {
+          notIn: favoriteCategoryProducts.map(p => p.id) // Exclude already selected products
+        }
+      },
+      include: { category: true },
+      take: Math.ceil(limit * 0.3), // 30% from viewed categories
+      orderBy: { createdAt: "desc" }
+    })
+  }
+
+  // Combine and shuffle the results for variety
+  let recommendations = [...favoriteCategoryProducts, ...viewedCategoryProducts]
+  
+  // If we don't have enough products, fill with featured products
+  if (recommendations.length < limit) {
+    const remainingSlots = limit - recommendations.length
+    const existingIds = recommendations.map(p => p.id)
+    
+    const featuredProducts = await prisma.product.findMany({
+      where: {
+        featured: true,
+        id: {
+          notIn: existingIds
+        }
+      },
+      include: { category: true },
+      take: remainingSlots,
+      orderBy: { createdAt: "desc" }
+    })
+    
+    recommendations = [...recommendations, ...featuredProducts]
+  }
+
+  // Shuffle the array to provide variety while maintaining preference weighting
+  for (let i = recommendations.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[recommendations[i], recommendations[j]] = [recommendations[j], recommendations[i]]
+  }
+
+  return recommendations.slice(0, limit)
 }
 
 export async function trackAdInteraction(adId: string, action: string, userId?: string) {
