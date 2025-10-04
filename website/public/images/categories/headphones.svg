@@ -1,54 +1,180 @@
-<svg width="600" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+<svg width="400" height="225" viewBox="0 0 400 225" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
   <defs>
-    <linearGradient id="bg-headphones" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#EF4444;stop-opacity:0.1" />
-      <stop offset="50%" style="stop-color:#EF4444;stop-opacity:0.2" />
-      <stop offset="100%" style="stop-color:#EF4444;stop-opacity:0.3" />
+    <linearGradient id="headphoneBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2c2c54;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#40407a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#706fd3;stop-opacity:1" />
     </linearGradient>
-    <filter id="shadow-headphones" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#EF4444" flood-opacity="0.4"/>
-    </filter>
-    <filter id="glow-headphones" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-      <feMerge> 
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
+    <linearGradient id="headbandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ee5a24;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="earcupGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="speakerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d2d3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#54a0ff;stop-opacity:1" />
+    </linearGradient>
   </defs>
   
   <!-- Background -->
-  <rect width="600" height="400" fill="url(#bg-headphones)" rx="20"/>
+  <rect width="400" height="225" fill="url(#headphoneBg)"/>
   
-  <!-- Border -->
-  <rect width="600" height="400" fill="none" stroke="#EF4444" stroke-width="3" rx="20"/>
+  <!-- Main headphones -->
+  <g transform="translate(100, 60)">
+    <!-- Headband -->
+    <path d="M20 40 Q50 10 80 40 Q50 70 20 40" 
+          fill="url(#headbandGrad)" 
+          stroke="#2c2c54" 
+          stroke-width="2"/>
+    
+    <!-- Left earcup -->
+    <g transform="translate(20, 40)">
+      <!-- Earcup outer -->
+      <circle cx="0" cy="0" r="25" fill="url(#earcupGrad)" stroke="#2c2c54" stroke-width="2"/>
+      <!-- Earcup inner -->
+      <circle cx="0" cy="0" r="18" fill="#1a1a2e" stroke="#40407a" stroke-width="1"/>
+      <!-- Speaker grill -->
+      <circle cx="0" cy="0" r="12" fill="url(#speakerGrad)" opacity="0.3"/>
+      <!-- Speaker pattern -->
+      <g fill="#00d2d3" opacity="0.6">
+        <circle cx="-6" cy="-6" r="1.5"/>
+        <circle cx="6" cy="-6" r="1.5"/>
+        <circle cx="-6" cy="6" r="1.5"/>
+        <circle cx="6" cy="6" r="1.5"/>
+        <circle cx="0" cy="0" r="2"/>
+      </g>
+      <!-- Cable connection -->
+      <rect x="-15" y="15" width="8" height="3" fill="#2c2c54" rx="1.5"/>
+    </g>
+    
+    <!-- Right earcup -->
+    <g transform="translate(80, 40)">
+      <!-- Earcup outer -->
+      <circle cx="0" cy="0" r="25" fill="url(#earcupGrad)" stroke="#2c2c54" stroke-width="2"/>
+      <!-- Earcup inner -->
+      <circle cx="0" cy="0" r="18" fill="#1a1a2e" stroke="#40407a" stroke-width="1"/>
+      <!-- Speaker grill -->
+      <circle cx="0" cy="0" r="12" fill="url(#speakerGrad)" opacity="0.3"/>
+      <!-- Speaker pattern -->
+      <g fill="#00d2d3" opacity="0.6">
+        <circle cx="-6" cy="-6" r="1.5"/>
+        <circle cx="6" cy="-6" r="1.5"/>
+        <circle cx="-6" cy="6" r="1.5"/>
+        <circle cx="6" cy="6" r="1.5"/>
+        <circle cx="0" cy="0" r="2"/>
+      </g>
+      <!-- Cable connection -->
+      <rect x="7" y="15" width="8" height="3" fill="#2c2c54" rx="1.5"/>
+    </g>
+  </g>
   
-  <!-- Large Icon -->
-  <text x="300" y="180" font-family="system-ui, -apple-system, sans-serif" font-size="120" text-anchor="middle" filter="url(#shadow-headphones)">🎧</text>
+  <!-- Wireless earbuds (top right) -->
+  <g transform="translate(280, 40)">
+    <!-- Left earbud -->
+    <g transform="translate(0, 0)">
+      <!-- Earbud body -->
+      <ellipse cx="0" cy="0" rx="12" ry="18" fill="url(#earcupGrad)" stroke="#2c2c54" stroke-width="1"/>
+      <!-- Eartip -->
+      <ellipse cx="0" cy="-8" rx="6" ry="8" fill="#40407a"/>
+      <!-- LED indicator -->
+      <circle cx="0" cy="8" r="2" fill="#00d2d3" opacity="0.8">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+    
+    <!-- Right earbud -->
+    <g transform="translate(30, 0)">
+      <!-- Earbud body -->
+      <ellipse cx="0" cy="0" rx="12" ry="18" fill="url(#earcupGrad)" stroke="#2c2c54" stroke-width="1"/>
+      <!-- Eartip -->
+      <ellipse cx="0" cy="-8" rx="6" ry="8" fill="#40407a"/>
+      <!-- LED indicator -->
+      <circle cx="0" cy="8" r="2" fill="#00d2d3" opacity="0.8">
+        <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+    
+    <!-- Charging case -->
+    <g transform="translate(15, 35)">
+      <!-- Case body -->
+      <rect x="0" y="0" width="30" height="20" fill="url(#headbandGrad)" rx="4"/>
+      <!-- Case lid -->
+      <rect x="2" y="2" width="26" height="16" fill="#1a1a2e" rx="2"/>
+      <!-- Case opening -->
+      <rect x="4" y="4" width="22" height="2" fill="#40407a" rx="1"/>
+      <!-- Charging port -->
+      <rect x="14" y="18" width="2" height="4" fill="#2c2c54" rx="1"/>
+    </g>
+  </g>
   
-  <!-- Category Title -->
-  <text x="300" y="230" font-family="system-ui, -apple-system, sans-serif" font-size="36" font-weight="700" text-anchor="middle" fill="#EF4444" filter="url(#glow-headphones)">
-    Headphones
-  </text>
+  <!-- Audio waves -->
+  <g opacity="0.6">
+    <!-- Sound waves from headphones -->
+    <g transform="translate(120, 100)">
+      <path d="M0 0 Q20 -10 40 0 Q20 10 0 0" fill="none" stroke="#00d2d3" stroke-width="2">
+        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" repeatCount="indefinite"/>
+      </path>
+      <path d="M0 0 Q25 -15 50 0 Q25 15 0 0" fill="none" stroke="#54a0ff" stroke-width="2">
+        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" begin="0.3s" repeatCount="indefinite"/>
+      </path>
+      <path d="M0 0 Q30 -20 60 0 Q30 20 0 0" fill="none" stroke="#ff6b6b" stroke-width="2">
+        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.5s" begin="0.6s" repeatCount="indefinite"/>
+      </path>
+    </g>
+    
+    <!-- Sound waves from earbuds -->
+    <g transform="translate(300, 60)">
+      <circle cx="0" cy="0" r="5" fill="none" stroke="#00d2d3" stroke-width="1">
+        <animate attributeName="r" values="5;15;5" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="0" cy="0" r="8" fill="none" stroke="#54a0ff" stroke-width="1">
+        <animate attributeName="r" values="8;18;8" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.6;0.1;0.6" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </g>
   
-  <!-- Description -->
-  <text x="300" y="260" font-family="system-ui, -apple-system, sans-serif" font-size="18" text-anchor="middle" fill="#EF4444" opacity="0.8">
-    Audio devices & headphones
-  </text>
+  <!-- Audio equalizer bars -->
+  <g transform="translate(50, 150)">
+    <rect x="0" y="0" width="4" height="20" fill="#00d2d3" opacity="0.8">
+      <animate attributeName="height" values="20;40;20" dur="1s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="8" y="5" width="4" height="30" fill="#54a0ff" opacity="0.8">
+      <animate attributeName="height" values="30;50;30" dur="1.2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="16" y="10" width="4" height="25" fill="#ff6b6b" opacity="0.8">
+      <animate attributeName="height" values="25;45;25" dur="0.8s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="24" y="8" width="4" height="28" fill="#00d2d3" opacity="0.8">
+      <animate attributeName="height" values="28;48;28" dur="1.1s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="32" y="3" width="4" height="32" fill="#54a0ff" opacity="0.8">
+      <animate attributeName="height" values="32;52;32" dur="1.3s" repeatCount="indefinite"/>
+    </rect>
+  </g>
   
-  <!-- Decorative elements -->
-  <circle cx="100" cy="100" r="8" fill="#EF4444" opacity="0.3"/>
-  <circle cx="500" cy="300" r="12" fill="#EF4444" opacity="0.2"/>
-  <circle cx="550" cy="80" r="6" fill="#EF4444" opacity="0.4"/>
-  <circle cx="80" cy="320" r="10" fill="#EF4444" opacity="0.3"/>
-  <circle cx="480" cy="120" r="4" fill="#EF4444" opacity="0.5"/>
-  <circle cx="120" cy="350" r="7" fill="#EF4444" opacity="0.3"/>
+  <!-- Floating music notes -->
+  <g opacity="0.7">
+    <text x="320" y="120" font-family="Arial" font-size="16" fill="#00d2d3">♪</text>
+    <animateTransform attributeName="transform" type="translate" values="320,120; 330,110; 320,120" dur="3s" repeatCount="indefinite"/>
+    
+    <text x="80" y="180" font-family="Arial" font-size="14" fill="#54a0ff">♫</text>
+    <animateTransform attributeName="transform" type="translate" values="80,180; 90,170; 80,180" dur="2.5s" begin="1s" repeatCount="indefinite"/>
+  </g>
   
-  <!-- Subtle pattern overlay -->
-  <defs>
-    <pattern id="dots-headphones" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-      <circle cx="20" cy="20" r="1" fill="#EF4444" opacity="0.1"/>
-    </pattern>
-  </defs>
-  <rect width="600" height="400" fill="url(#dots-headphones)" rx="20"/>
+  <!-- Quality badges -->
+  <g transform="translate(250, 150)">
+    <!-- Hi-Res badge -->
+    <rect x="0" y="0" width="60" height="20" fill="url(#speakerGrad)" rx="10"/>
+    <text x="30" y="14" font-family="Arial" font-size="10" fill="#1a1a2e" text-anchor="middle" font-weight="bold">Hi-Res</text>
+    
+    <!-- Noise Cancel badge -->
+    <rect x="0" y="30" width="60" height="20" fill="url(#headbandGrad)" rx="10"/>
+    <text x="30" y="44" font-family="Arial" font-size="8" fill="#1a1a2e" text-anchor="middle" font-weight="bold">Noise Cancel</text>
+  </g>
 </svg>
