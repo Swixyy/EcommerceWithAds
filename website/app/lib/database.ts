@@ -463,53 +463,110 @@ export async function getPersonalizedRecommendations(userPreferences: Record<str
     })
   }
 
-  // Get products from favorite categories first
-  const favoriteCategoryProducts = await prisma.product.findMany({
-    where: {
-      category: {
-        slug: {
-          in: preferences.favoriteCategories
-        }
-      }
-    },
-    include: { category: true },
-    take: Math.ceil(limit * 0.7), // 70% from favorite categories
-    orderBy: { createdAt: "desc" }
-  })
-
-  // Get products from recently viewed categories
+  // Get products from recently viewed categories with sliding window logic
   const viewedCategories = preferences.viewedCategories || []
-  let viewedCategoryProducts: any[] = []
+  let recommendations: any[] = []
   
   if (viewedCategories.length > 0) {
-    viewedCategoryProducts = await prisma.product.findMany({
+    // Get the last browsed category
+    const lastBrowsedCategory = viewedCategories[viewedCategories.length - 1]
+    
+    // Get 1 new product from the last browsed category
+    const newProduct = await prisma.product.findFirst({
       where: {
         category: {
-          slug: {
-            in: viewedCategories
-          }
-        },
-        id: {
-          notIn: favoriteCategoryProducts.map(p => p.id) // Exclude already selected products
+          slug: lastBrowsedCategory
         }
       },
       include: { category: true },
-      take: Math.ceil(limit * 0.3), // 30% from viewed categories
       orderBy: { createdAt: "desc" }
     })
+    
+    if (newProduct) {
+      // Start with the new product at position 1
+      recommendations = [newProduct]
+      
+      // Get unique categories from browsing history (excluding the current one)
+      const uniqueCategories = []
+      const seen = new Set([lastBrowsedCategory]) // Exclude current category
+      
+      // Go through browsing history backwards to get most recent unique categories
+      for (let i = viewedCategories.length - 2; i >= 0; i--) {
+        const category = viewedCategories[i]
+        if (!seen.has(category)) {
+          seen.add(category)
+          uniqueCategories.unshift(category) // Add to beginning to maintain chronological order
+        }
+      }
+      
+      // Take up to 3 previous unique categories
+      const previousCategories = uniqueCategories.slice(-3)
+      
+      // Get 1 product from each previous category
+      for (const categorySlug of previousCategories) {
+        if (recommendations.length >= limit) break
+        
+        // Get 1 product from this category that we haven't already selected
+        const existingIds = recommendations.map(p => p.id)
+        const categoryProduct = await prisma.product.findFirst({
+          where: {
+            category: {
+              slug: categorySlug
+            },
+            id: {
+              notIn: existingIds
+            }
+          },
+          include: { category: true },
+          orderBy: { createdAt: "desc" }
+        })
+        
+        if (categoryProduct) {
+          recommendations.push(categoryProduct)
+        }
+      }
+    }
   }
-
-  // Combine and shuffle the results for variety
-  let recommendations = [...favoriteCategoryProducts, ...viewedCategoryProducts]
+  
+  // If no viewed categories or not enough products, include favorite categories as fallback
+  if (recommendations.length < limit) {
+    const existingIds = recommendations.map(p => p.id)
+    const existingCategories = recommendations.map(p => p.category.slug)
+    const remainingSlots = limit - recommendations.length
+    
+    const favoriteCategoryProducts = await prisma.product.findMany({
+      where: {
+        category: {
+          slug: {
+            in: preferences.favoriteCategories.filter(cat => !existingCategories.includes(cat))
+          }
+        },
+        id: {
+          notIn: existingIds
+        }
+      },
+      include: { category: true },
+      take: remainingSlots,
+      orderBy: { createdAt: "desc" }
+    })
+    
+    recommendations = [...recommendations, ...favoriteCategoryProducts]
+  }
   
   // If we don't have enough products, fill with featured products
   if (recommendations.length < limit) {
     const remainingSlots = limit - recommendations.length
     const existingIds = recommendations.map(p => p.id)
+    const existingCategories = recommendations.map(p => p.category.slug)
     
     const featuredProducts = await prisma.product.findMany({
       where: {
         featured: true,
+        category: {
+          slug: {
+            notIn: existingCategories
+          }
+        },
         id: {
           notIn: existingIds
         }
@@ -522,11 +579,9 @@ export async function getPersonalizedRecommendations(userPreferences: Record<str
     recommendations = [...recommendations, ...featuredProducts]
   }
 
-  // Shuffle the array to provide variety while maintaining preference weighting
-  for (let i = recommendations.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[recommendations[i], recommendations[j]] = [recommendations[j], recommendations[i]]
-  }
+  // Don't shuffle - maintain the sliding window order
+  // Position 1: Last browsed category
+  // Position 2-4: Previous unique categories in chronological order
 
   return recommendations.slice(0, limit)
 }

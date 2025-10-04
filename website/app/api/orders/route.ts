@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: session.user.id,
         total: total,
-        status: "pending",
+        status: "PENDING",
         shippingAddress: shippingAddress,
         paymentMethod: paymentMethod || "card",
         items: {

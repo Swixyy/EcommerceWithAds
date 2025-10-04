@@ -58,7 +58,13 @@ export default function CheckoutPage() {
       router.push("/cart")
       return
     }
-  }, [cartItems, router])
+    
+    // Check if user is authenticated
+    if (!session) {
+      router.push("/auth/signin?callbackUrl=/checkout")
+      return
+    }
+  }, [cartItems, router, session])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -88,6 +94,13 @@ export default function CheckoutPage() {
     setLoading(true)
 
     try {
+      // Check if user is still authenticated
+      if (!session?.user?.id) {
+        toast.error("Session expired. Please log in again.")
+        router.push("/auth/signin?callbackUrl=/checkout")
+        return
+      }
+
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000))
 
@@ -124,7 +137,8 @@ export default function CheckoutPage() {
         toast.success("Order placed successfully!")
         router.push(`/orders/${order.id}`)
       } else {
-        throw new Error("Failed to create order")
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(`Failed to create order: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error("Checkout error:", error)
@@ -132,6 +146,18 @@ export default function CheckoutPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show loading while checking authentication
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    )
   }
 
   if (cartItems.length === 0) {

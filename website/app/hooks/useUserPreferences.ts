@@ -57,10 +57,9 @@ export function useUserPreferences() {
 
   const addToViewedCategories = async (category: string) => {
     const currentViewed = preferences.viewedCategories || []
-    if (!currentViewed.includes(category)) {
-      const updatedViewed = [...currentViewed, category].slice(-10) // Keep last 10
-      await updatePreferences({ viewedCategories: updatedViewed })
-    }
+    // Always add the category (even if it already exists) for sliding window behavior
+    const updatedViewed = [...currentViewed, category].slice(-10) // Keep last 10
+    await updatePreferences({ viewedCategories: updatedViewed })
   }
 
   const toggleFavoriteCategory = async (category: string) => {
