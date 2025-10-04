@@ -71,10 +71,10 @@ export default function SidebarAd({ className = "" }: SidebarAdProps) {
         </div>
 
         <div className="space-y-3">
-          {advertisement.image && (
+          {advertisement.imageUrl && (
             <div className="aspect-w-16 aspect-h-9">
               <Image
-                src={advertisement.image}
+                src={advertisement.imageUrl}
                 alt={advertisement.title}
                 width={300}
                 height={200}

@@ -23,11 +23,11 @@ export default function AdvertisementBanner({
 
   useEffect(() => {
     fetchPersonalizedAd()
-  }, [preferences])
+  }, [preferences, position])
 
   const fetchPersonalizedAd = async () => {
     try {
-      const response = await fetch("/api/ads/personalized")
+      const response = await fetch(`/api/ads/personalized?position=${position}`)
       if (response.ok) {
         const data = await response.json()
         setAdvertisement(data.advertisement)
