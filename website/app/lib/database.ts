@@ -394,18 +394,45 @@ export async function getPersonalizedAdvertisement(userPreferences: Record<strin
     return defaultAds[position as keyof typeof defaultAds] || defaultAds.top
   }
 
-  // Find the most relevant category based on user preferences
+  // Find the most relevant category based on user preferences and position
   const favoriteCategory = preferences.favoriteCategories[0]
   const viewedCategories = preferences.viewedCategories || []
   
-  // Check if user has viewed specific categories recently
   let targetCategory = favoriteCategory
   
-  // If user has viewed other categories recently, consider them too
-  if (viewedCategories.length > 0) {
-    const recentCategory = viewedCategories[viewedCategories.length - 1]
-    // 70% chance to show ad for recently viewed category, 30% for favorite
-    targetCategory = Math.random() < 0.7 ? recentCategory : favoriteCategory
+  // Different targeting logic for different positions
+  if (position === "top") {
+    // Top ads: Show favorite category or recently viewed
+    if (viewedCategories.length > 0) {
+      const recentCategory = viewedCategories[viewedCategories.length - 1]
+      // 70% chance to show ad for recently viewed category, 30% for favorite
+      targetCategory = Math.random() < 0.7 ? recentCategory : favoriteCategory
+    }
+  } else if (position === "bottom") {
+    // Bottom ads: Show different category to provide variety
+    if (preferences.favoriteCategories.length > 1) {
+      // If user has multiple favorite categories, show the second one
+      targetCategory = preferences.favoriteCategories[1]
+    } else if (viewedCategories.length > 1) {
+      // If user has viewed multiple categories, show a different one
+      const availableCategories = viewedCategories.filter(cat => cat !== favoriteCategory)
+      if (availableCategories.length > 0) {
+        targetCategory = availableCategories[Math.floor(Math.random() * availableCategories.length)]
+      }
+    } else {
+      // Fallback: cycle through available categories
+      const allCategories = ['laptops', 'smartphones', 'accessories', 'gaming', 'tablets', 'headphones']
+      const availableCategories = allCategories.filter(cat => cat !== favoriteCategory)
+      if (availableCategories.length > 0) {
+        targetCategory = availableCategories[Math.floor(Math.random() * availableCategories.length)]
+      }
+    }
+  } else {
+    // Sidebar ads: Use original logic
+    if (viewedCategories.length > 0) {
+      const recentCategory = viewedCategories[viewedCategories.length - 1]
+      targetCategory = Math.random() < 0.7 ? recentCategory : favoriteCategory
+    }
   }
 
   // Get ad for the target category and position

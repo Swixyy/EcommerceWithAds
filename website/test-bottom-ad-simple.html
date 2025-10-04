@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Bottom Ad Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .ad-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: linear-gradient(to right, #059669, #0d9488);
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .ad-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ad-text {
+            flex: 1;
+        }
+        .ad-image {
+            width: 80px;
+            height: 60px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 12px;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Simple Bottom Ad Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Bottom Ad API</h2>
+        <button onclick="testBottomAd()">Test Bottom Ad</button>
+        <div id="results"></div>
+    </div>
+
+    <div id="adContainer" style="display: none;">
+        <h2>Bottom Ad Preview</h2>
+        <div class="ad-container">
+            <div class="ad-content">
+                <div class="ad-text">
+                    <h3 id="adTitle">Loading...</h3>
+                    <p id="adDescription">Testing bottom advertisement...</p>
+                </div>
+                <div class="ad-image" id="adImage">
+                    <span>Image</span>
+                </div>
+            </div>
+            <button onclick="visitLink()" style="margin-top: 10px;">Shop Now</button>
+        </div>
+    </div>
+
+    <script>
+        async function testBottomAd() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/ads/personalized?position=bottom');
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <div style="color: green;">
+                        <strong>✅ Bottom Ad API Working!</strong><br>
+                        ID: ${data.advertisement.id}<br>
+                        Title: ${data.advertisement.title}<br>
+                        Image: ${data.advertisement.imageUrl}<br>
+                        Link: ${data.advertisement.link}
+                    </div>
+                `;
+                
+                // Show the ad preview
+                document.getElementById('adTitle').textContent = data.advertisement.title;
+                document.getElementById('adContainer').style.display = 'block';
+                
+                // Test image loading
+                try {
+                    const imgResponse = await fetch(data.advertisement.imageUrl);
+                    if (imgResponse.ok) {
+                        document.getElementById('adImage').innerHTML = '✅ Image OK';
+                        document.getElementById('adImage').style.color = 'green';
+                    } else {
+                        document.getElementById('adImage').innerHTML = '❌ Image Failed';
+                        document.getElementById('adImage').style.color = 'red';
+                    }
+                } catch (imgError) {
+                    document.getElementById('adImage').innerHTML = '❌ Image Error';
+                    document.getElementById('adImage').style.color = 'red';
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div style="color: red;"><strong>❌ Error:</strong> ${error.message}</div>`;
+            }
+        }
+        
+        function visitLink() {
+            // This would normally open the ad link
+            alert('Ad link clicked!');
+        }
+    </script>
+</body>
+</html>

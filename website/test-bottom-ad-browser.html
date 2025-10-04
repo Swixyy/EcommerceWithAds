@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bottom Ad Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .ad-preview {
+            border: 2px solid #ddd;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: linear-gradient(to right, #059669, #0d9488);
+            color: white;
+        }
+        .ad-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ad-text {
+            flex: 1;
+        }
+        .ad-image {
+            width: 100px;
+            height: 60px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Bottom Advertisement Test</h1>
+    
+    <div class="test-section">
+        <h2>📋 Test Instructions</h2>
+        <p>This page tests the bottom advertisement system to identify any issues.</p>
+        <button onclick="testBottomAdAPI()">Test Bottom Ad API</button>
+        <button onclick="testAllPositions()">Test All Ad Positions</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎨 Bottom Ad Preview</h2>
+        <div id="adPreview" class="ad-preview" style="display: none;">
+            <div class="ad-content">
+                <div class="ad-text">
+                    <h3 id="adTitle">Loading...</h3>
+                    <p id="adDescription">Testing bottom advertisement...</p>
+                </div>
+                <div class="ad-image" id="adImage">
+                    <span>Image</span>
+                </div>
+            </div>
+            <button onclick="visitAdLink()" style="margin-top: 10px;">Shop Now</button>
+        </div>
+    </div>
+
+    <script>
+        let currentAd = null;
+        let testResults = [];
+
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        async function testBottomAdAPI() {
+            addResult("Testing bottom ad API endpoint...", 'info');
+            
+            try {
+                const response = await fetch('/api/ads/personalized?position=bottom');
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                currentAd = data.advertisement;
+                
+                addResult(`
+                    <strong>✅ Bottom Ad API Response:</strong><br>
+                    <strong>ID:</strong> ${currentAd.id}<br>
+                    <strong>Title:</strong> ${currentAd.title}<br>
+                    <strong>Image:</strong> ${currentAd.imageUrl}<br>
+                    <strong>Link:</strong> ${currentAd.link}
+                `, 'success');
+                
+                // Update preview
+                document.getElementById('adTitle').textContent = currentAd.title;
+                document.getElementById('adPreview').style.display = 'block';
+                
+                // Test image loading
+                try {
+                    const imageResponse = await fetch(currentAd.imageUrl);
+                    if (imageResponse.ok) {
+                        addResult("✅ Bottom ad image loads successfully", 'success');
+                    } else {
+                        addResult(`❌ Bottom ad image failed to load: ${imageResponse.status}`, 'error');
+                    }
+                } catch (imageError) {
+                    addResult(`❌ Image loading error: ${imageError.message}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ API test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllPositions() {
+            addResult("Testing all advertisement positions...", 'info');
+            
+            const positions = ['top', 'bottom', 'sidebar'];
+            
+            for (const position of positions) {
+                try {
+                    const response = await fetch(`/api/ads/personalized?position=${position}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        addResult(`✅ ${position.toUpperCase()} ad: ${data.advertisement.title}`, 'success');
+                    } else {
+                        addResult(`❌ ${position.toUpperCase()} ad failed: ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    addResult(`❌ ${position.toUpperCase()} ad error: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        function visitAdLink() {
+            if (currentAd && currentAd.link) {
+                window.open(currentAd.link, '_blank');
+                addResult(`Opened ad link: ${currentAd.link}`, 'info');
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+            document.getElementById('adPreview').style.display = 'none';
+            currentAd = null;
+            addResult('Test results cleared. Ready for new tests.', 'info');
+        }
+
+        // Initialize
+        addResult('Bottom ad test page loaded. Click "Test Bottom Ad API" to start.', 'info');
+    </script>
+</body>
+</html>

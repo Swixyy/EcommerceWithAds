@@ -82,10 +82,10 @@ export default function AdvertisementBanner({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-4">
-            {advertisement.image && (
+            {advertisement.imageUrl && (
               <div className="flex-shrink-0">
                 <Image
-                  src={advertisement.image}
+                  src={advertisement.imageUrl}
                   alt={advertisement.title}
                   width={position === "sidebar" ? 80 : 60}
                   height={position === "sidebar" ? 80 : 60}

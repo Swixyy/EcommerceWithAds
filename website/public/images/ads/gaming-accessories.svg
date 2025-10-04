@@ -1,0 +1,10 @@
+<svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="200" fill="#f8f9fa"/>
+  <ellipse cx="100" cy="100" rx="35" ry="25" fill="#1a1a1a" stroke="#4a4a4a" stroke-width="2"/>
+  <ellipse cx="200" cy="100" rx="35" ry="25" fill="#1a1a1a" stroke="#4a4a4a" stroke-width="2"/>
+  <rect x="85" y="95" width="30" height="10" rx="5" fill="#4a4a4a"/>
+  <rect x="185" y="95" width="30" height="10" rx="5" fill="#4a4a4a"/>
+  <rect x="140" y="90" width="20" height="20" rx="10" fill="#1a1a1a" stroke="#4a4a4a" stroke-width="2"/>
+  <rect x="145" y="95" width="10" height="10" rx="5" fill="#4a4a4a"/>
+  <text x="150" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1d1d1f">Gaming Accessories</text>
+</svg>
