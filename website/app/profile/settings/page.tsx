@@ -313,7 +313,7 @@ export default function SettingsPage() {
                     Favorite Categories
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {["laptops", "smartphones", "accessories"].map((category) => (
+                    {["laptops", "smartphones", "accessories", "gaming", "headphones", "tablets"].map((category) => (
                       <button
                         key={category}
                         onClick={() => {

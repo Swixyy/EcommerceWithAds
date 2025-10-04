@@ -8,7 +8,7 @@ import { ArrowLeft, Heart, ShoppingCart, Star, Share2, Plus, Minus } from "lucid
 import { ProductWithCategory } from "@/types"
 import { useUserPreferences } from "@/hooks/useUserPreferences"
 import { useCart } from "@/contexts/CartContext"
-import SidebarAd from "@/components/ads/SidebarAd"
+import TieredSidebarAd from "@/components/ads/TieredSidebarAd"
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -321,7 +321,7 @@ export default function ProductDetailPage() {
 
           {/* Sidebar Advertisement */}
           <div className="lg:col-span-1">
-            <SidebarAd className="sticky top-8" />
+            <TieredSidebarAd className="sticky top-8" />
           </div>
         </div>
       </div>

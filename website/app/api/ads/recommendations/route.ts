@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
         select: { preferences: true }
       })
       
-      if (user?.preferences) {
-        userPreferences = user.preferences as {
-          viewedCategories?: string[]
-          favoriteCategories?: string[]
-          adPreferences?: string[]
-        }
-      }
+          if (user?.preferences) {
+            userPreferences = user.preferences as {
+              viewedCategories?: string[]
+              favoriteCategories?: string[]
+              adPreferences?: string[]
+            }
+          }
     }
 
     const products = await getPersonalizedRecommendations(userPreferences, limit)

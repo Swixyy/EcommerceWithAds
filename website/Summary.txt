@@ -791,6 +791,64 @@ The ads are delivered **immediately** upon page load, with a **~250ms delay** fo
 
 **The complete personalized advertising system is now 100% operational!**
 
+---
+
+## 🎯 **DISCOUNT TRACKING SYSTEM - IN DEVELOPMENT**
+
+**Date**: October 3, 2025  
+**Status**: 🚧 **IN PROGRESS**
+
+### **🎯 New Feature Requirements:**
+**Problem**: When users click sidebar ad products, they redirect to product pages but prices don't reflect the 8% discount shown in the ad.
+
+### **💡 Proposed Solution:**
+**Temporary Discount System with Smart Expiration:**
+
+1. **🎯 Discount Tracking**: Store temporary discounts with expiration times
+2. **📱 Product Page Integration**: Show discounted price when accessed via sidebar ad
+3. **🛒 Cart Integration**: Maintain discount when added to cart
+4. **⏰ Auto-Expiration**: Remove discount after 10 minutes if not added to cart
+5. **🔗 URL Tracking**: Detect when product is accessed via sidebar ad
+
+### **🏗️ Technical Implementation:**
+**Database Schema Added:**
+```sql
+model TemporaryDiscount {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  originalPrice Float
+  discountPrice Float
+  discountPercent Int
+  expiresAt   DateTime
+  source      String   @default("sidebar_ad")
+  addedToCart Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
+}
+```
+
+### **🔄 User Flow:**
+1. **User sees sidebar ad** with 8% discount
+2. **Clicks product link** → Redirects to product page with discounted price
+3. **Adds to cart** → Discount persists until checkout
+4. **Doesn't add to cart** → Discount expires after 10 minutes
+5. **Revisits product** → Shows original price (discount expired)
+
+### **🎯 Benefits:**
+- **Urgency Creation**: Time-limited discounts encourage quick decisions
+- **Promotional Tracking**: Monitor which ads lead to conversions
+- **Smart Expiration**: Prevents indefinite discount abuse
+- **Seamless UX**: Discounts persist through cart flow
+
+### **📊 Status:**
+- ✅ Database schema designed
+- 🚧 API endpoints to be created
+- 🚧 Frontend integration pending
+- 🚧 Cart system updates pending
+
 TECHNICAL STACK
 ==============
 Backend:
