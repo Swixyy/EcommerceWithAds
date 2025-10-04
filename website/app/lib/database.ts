@@ -68,7 +68,7 @@ export async function getCategories() {
 
 // Cart operations
 export async function getCartItems(userId: string): Promise<CartItemWithProduct[]> {
-  return await prisma.cartItem.findMany({
+  const cartItems = await prisma.cartItem.findMany({
     where: { userId },
     include: {
       product: {
@@ -78,6 +78,44 @@ export async function getCartItems(userId: string): Promise<CartItemWithProduct[
       }
     }
   })
+
+  // Check for active discounts for each cart item
+  const cartItemsWithDiscounts = await Promise.all(
+    cartItems.map(async (item) => {
+      // Check if there's an active discount for this product
+      const discount = await prisma.temporaryDiscount.findUnique({
+        where: {
+          userId_productId: {
+            userId: userId,
+            productId: item.productId
+          }
+        }
+      })
+
+      // If discount exists and is still valid, apply it
+      if (discount && discount.expiresAt > new Date()) {
+        return {
+          ...item,
+          product: {
+            ...item.product,
+            originalPrice: item.product.price,
+            price: discount.discountPrice, // Use discounted price
+            discountApplied: {
+              originalPrice: discount.originalPrice,
+              discountPrice: discount.discountPrice,
+              discountPercent: discount.discountPercent,
+              expiresAt: discount.expiresAt,
+              source: discount.source
+            }
+          }
+        }
+      }
+
+      return item
+    })
+  )
+
+  return cartItemsWithDiscounts
 }
 
 export async function addToCart(userId: string, productId: string, quantity: number = 1) {

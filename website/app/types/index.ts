@@ -15,7 +15,16 @@ export type ProductWithCategory = Product & {
 }
 
 export type CartItemWithProduct = CartItem & {
-  product: Product
+  product: Product & {
+    originalPrice?: number
+    discountApplied?: {
+      originalPrice: number
+      discountPrice: number
+      discountPercent: number
+      expiresAt: Date
+      source: string
+    }
+  }
 }
 
 export type OrderWithItems = Order & {

@@ -38,7 +38,19 @@ export default function TieredSidebarAd({ className = "" }: TieredSidebarAdProps
 
   const fetchTieredProducts = async () => {
     try {
-      const response = await fetch("/api/ads/sidebar-tiered")
+      // Get current product category from URL if on a product page
+      const currentProductSlug = window.location.pathname.split('/').pop();
+      let currentProductCategory = "smartphones"; // Default fallback
+
+      if (currentProductSlug && currentProductSlug !== "products") {
+        const productResponse = await fetch(`/api/products/${currentProductSlug}`);
+        if (productResponse.ok) {
+          const productData = await productResponse.json();
+          currentProductCategory = productData.product.category.slug;
+        }
+      }
+
+      const response = await fetch(`/api/ads/sidebar-tiered?category=${currentProductCategory}`)
       if (response.ok) {
         const data = await response.json()
         setProducts(data.products || [])
@@ -98,7 +110,7 @@ export default function TieredSidebarAd({ className = "" }: TieredSidebarAdProps
           {products.map((product, index) => (
             <Link
               key={product.id}
-              href={`/products/${product.slug}`}
+              href={`/products/${product.slug}?discount=${product.discount}&source=sidebar_ad&productId=${product.id}`}
               className="block group hover:bg-gray-50 rounded-lg p-3 transition-colors"
             >
               <div className="flex space-x-3">
@@ -148,9 +160,15 @@ export default function TieredSidebarAd({ className = "" }: TieredSidebarAdProps
                   {/* Price Range Badge */}
                   {product.range !== "special" && (
                     <div className="mt-1">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        <span className="w-2 h-2 bg-blue-600 rounded-full mr-1"></span>
-                        {product.range} Tier
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        product.range === "premium" 
+                          ? "bg-purple-100 text-purple-800" 
+                          : "bg-blue-100 text-blue-800"
+                      }`}>
+                        <span className={`w-2 h-2 rounded-full mr-1 ${
+                          product.range === "premium" ? "bg-purple-600" : "bg-blue-600"
+                        }`}></span>
+                        {product.range === "premium" ? "Premium Upsell" : `${product.range} Tier`}
                       </span>
                     </div>
                   )}

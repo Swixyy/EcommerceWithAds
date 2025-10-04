@@ -197,9 +197,25 @@ export default function CartPage() {
                             </Link>
                           </h3>
                           <p className="text-sm text-gray-500">{item.product.category.name}</p>
-                          <p className="text-lg font-semibold text-gray-900">
-                            ${item.product.price.toFixed(2)}
-                          </p>
+                          <div className="space-y-1">
+                            {item.product.discountApplied ? (
+                              <div>
+                                <p className="text-lg font-semibold text-green-600">
+                                  ${item.product.price.toFixed(2)}
+                                </p>
+                                <p className="text-sm text-gray-500 line-through">
+                                  ${item.product.discountApplied.originalPrice.toFixed(2)}
+                                </p>
+                                <p className="text-xs text-red-600 font-medium">
+                                  Save {item.product.discountApplied.discountPercent}%
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="text-lg font-semibold text-gray-900">
+                                ${item.product.price.toFixed(2)}
+                              </p>
+                            )}
+                          </div>
                         </div>
 
                         <div className="flex items-center space-x-2">
@@ -225,9 +241,20 @@ export default function CartPage() {
                         </div>
 
                         <div className="text-right">
-                          <p className="text-lg font-semibold text-gray-900">
-                            ${(item.product.price * item.quantity).toFixed(2)}
-                          </p>
+                          {item.product.discountApplied ? (
+                            <div>
+                              <p className="text-lg font-semibold text-green-600">
+                                ${(item.product.price * item.quantity).toFixed(2)}
+                              </p>
+                              <p className="text-sm text-gray-500 line-through">
+                                ${(item.product.discountApplied.originalPrice * item.quantity).toFixed(2)}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-lg font-semibold text-gray-900">
+                              ${(item.product.price * item.quantity).toFixed(2)}
+                            </p>
+                          )}
                           <button
                             onClick={() => removeItem(item.productId)}
                             disabled={updating === item.productId}

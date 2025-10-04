@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, Heart, ShoppingCart, Star, Share2, Plus, Minus } from "lucide-react"
+import { ArrowLeft, Heart, ShoppingCart, Star, Share2, Plus, Minus, Clock, Tag } from "lucide-react"
 import { ProductWithCategory } from "@/types"
 import { useUserPreferences } from "@/hooks/useUserPreferences"
 import { useCart } from "@/contexts/CartContext"
@@ -12,6 +12,7 @@ import TieredSidebarAd from "@/components/ads/TieredSidebarAd"
 
 export default function ProductDetailPage() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const { addToViewedCategories } = useUserPreferences()
   const { addToCart } = useCart()
   
@@ -20,6 +21,16 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const [selectedImage, setSelectedImage] = useState(0)
   const [inWishlist, setInWishlist] = useState(false)
+  
+  // Discount tracking state
+  const [discount, setDiscount] = useState<{
+    originalPrice: number
+    discountPrice: number
+    discountPercent: number
+    expiresAt: string
+    source: string
+  } | null>(null)
+  const [discountLoading, setDiscountLoading] = useState(false)
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -46,6 +57,46 @@ export default function ProductDetailPage() {
     }
   }, [params.slug, fetchProduct])
 
+  // Handle discount tracking - moved to useEffect to avoid infinite loop
+  useEffect(() => {
+    if (!product) return
+
+    const discountParam = searchParams.get("discount")
+    const sourceParam = searchParams.get("source")
+    const productIdParam = searchParams.get("productId")
+
+    if (discountParam && sourceParam && productIdParam === product.id) {
+      setDiscountLoading(true)
+      
+      const createDiscount = async () => {
+        try {
+          // Check if this is a premium product with 16% discount
+          const isPremiumProduct = parseInt(discountParam) === 16
+          const response = await fetch("/api/discounts/temporary", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              productId: product.id,
+              discountPercent: parseInt(discountParam),
+              source: isPremiumProduct ? "sidebar_ad_premium" : sourceParam
+            })
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            setDiscount(data.discount)
+          }
+        } catch (error) {
+          console.error("Failed to create temporary discount:", error)
+        } finally {
+          setDiscountLoading(false)
+        }
+      }
+
+      createDiscount()
+    }
+  }, [product?.id, searchParams.get("discount"), searchParams.get("source"), searchParams.get("productId")])
+
   const addToWishlist = async () => {
     if (!product) return
     
@@ -66,6 +117,23 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (!product) return
+    
+    // If there's an active discount, update its cart status
+    if (discount) {
+      try {
+        await fetch("/api/discounts/temporary", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productId: product.id,
+            addedToCart: true
+          })
+        })
+      } catch (error) {
+        console.error("Failed to update discount cart status:", error)
+      }
+    }
+    
     await addToCart(product.id, quantity)
   }
 
@@ -204,17 +272,73 @@ export default function ProductDetailPage() {
 
             {/* Price */}
             <div className="border-t border-gray-200 pt-6">
-              <div className="flex items-baseline space-x-2">
-                <span className="text-3xl font-bold text-gray-900">
-                  ${product.price.toFixed(2)}
-                </span>
-                <span className="text-lg text-gray-500 line-through">
-                  ${(product.price * 1.2).toFixed(2)}
-                </span>
-                <span className="text-sm text-green-600 font-medium">
-                  Save 20%
-                </span>
-              </div>
+              {discount ? (
+                <div className="space-y-3">
+                  {/* Discount Banner */}
+                  <div className={`rounded-lg p-3 ${
+                    discount.discountPercent === 16 
+                      ? "bg-purple-50 border border-purple-200" 
+                      : "bg-red-50 border border-red-200"
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      <Tag className={`h-4 w-4 ${
+                        discount.discountPercent === 16 ? "text-purple-600" : "text-red-600"
+                      }`} />
+                      <span className={`text-sm font-medium ${
+                        discount.discountPercent === 16 ? "text-purple-800" : "text-red-800"
+                      }`}>
+                        {discount.discountPercent === 16 ? "Premium Upsell Offer" : "Limited Time Offer"} from {discount.source.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Clock className={`h-3 w-3 ${
+                        discount.discountPercent === 16 ? "text-purple-600" : "text-red-600"
+                      }`} />
+                      <span className={`text-xs ${
+                        discount.discountPercent === 16 ? "text-purple-600" : "text-red-600"
+                      }`}>
+                        Expires: {new Date(discount.expiresAt).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Discounted Price */}
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-3xl font-bold text-green-600">
+                      ${discount.discountPrice.toFixed(2)}
+                    </span>
+                    <span className="text-lg text-gray-500 line-through">
+                      ${discount.originalPrice.toFixed(2)}
+                    </span>
+                    <span className={`text-sm font-medium ${
+                      discount.discountPercent === 16 ? "text-purple-600" : "text-red-600"
+                    }`}>
+                      Save {discount.discountPercent}%
+                    </span>
+                  </div>
+                  <div className="text-sm text-green-600 font-medium">
+                    You save ${(discount.originalPrice - discount.discountPrice).toFixed(2)}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-baseline space-x-2">
+                  <span className="text-3xl font-bold text-gray-900">
+                    ${product.price.toFixed(2)}
+                  </span>
+                  <span className="text-lg text-gray-500 line-through">
+                    ${(product.price * 1.2).toFixed(2)}
+                  </span>
+                  <span className="text-sm text-green-600 font-medium">
+                    Save 20%
+                  </span>
+                </div>
+              )}
+              
+              {discountLoading && (
+                <div className="mt-2 text-sm text-blue-600">
+                  Loading special discount...
+                </div>
+              )}
             </div>
 
             {/* Quantity and Actions */}

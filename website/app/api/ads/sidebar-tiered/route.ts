@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Smart category selection algorithm
+    // For the first 3 products: Use cross-selling logic
     let targetCategory = currentProductCategory
     
     if (userPreferences?.favoriteCategories?.length) {
@@ -43,6 +44,9 @@ export async function GET(request: NextRequest) {
     } else if (userPreferences?.viewedCategories?.length) {
       targetCategory = userPreferences.viewedCategories[userPreferences.viewedCategories.length - 1]
     }
+
+    // For the premium upsell (4th product): Always use current category
+    const premiumTargetCategory = currentProductCategory
 
 
     // Get category info
@@ -135,38 +139,79 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // If we don't have enough products, try to get some from the category
-    if (tieredProducts.length < 2) {
-      const fallbackProducts = await prisma.product.findMany({
-        where: {
-          categoryId: categoryInfo.id,
-          id: {
-            notIn: tieredProducts.map(p => p.id)
+        // If we don't have enough products, try to get some from the category
+        if (tieredProducts.length < 2) {
+          const fallbackProducts = await prisma.product.findMany({
+            where: {
+              categoryId: categoryInfo.id,
+              id: {
+                notIn: tieredProducts.map(p => p.id)
+              }
+            },
+            include: { category: true },
+            take: 3 - tieredProducts.length,
+            orderBy: { createdAt: "desc" }
+          })
+
+          for (const product of fallbackProducts) {
+            const discountedPrice = Math.round(product.price * 0.92 * 100) / 100
+            const originalPrice = product.price
+
+            tieredProducts.push({
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              image: product.image,
+              originalPrice,
+              discountedPrice,
+              discount: 8,
+              savings: Math.round((originalPrice - discountedPrice) * 100) / 100,
+              category: product.category.name,
+              range: "special"
+            })
           }
-        },
-        include: { category: true },
-        take: 3 - tieredProducts.length,
-        orderBy: { createdAt: "desc" }
-      })
+        }
 
-      for (const product of fallbackProducts) {
-        const discountedPrice = Math.round(product.price * 0.92 * 100) / 100
-        const originalPrice = product.price
-
-        tieredProducts.push({
-          id: product.id,
-          name: product.name,
-          slug: product.slug,
-          image: product.image,
-          originalPrice,
-          discountedPrice,
-          discount: 8,
-          savings: Math.round((originalPrice - discountedPrice) * 100) / 100,
-          category: product.category.name,
-          range: "special"
+        // Add fourth product: Most expensive from CURRENT category with 16% discount
+        // Get the current category info for premium upsell
+        const currentCategoryInfo = await prisma.category.findUnique({
+          where: { slug: premiumTargetCategory },
+          select: { id: true, name: true, slug: true }
         })
-      }
-    }
+
+        if (!currentCategoryInfo) {
+          console.log(`Current category ${premiumTargetCategory} not found`)
+        } else {
+          const mostExpensiveProduct = await prisma.product.findFirst({
+            where: {
+              categoryId: currentCategoryInfo.id,
+              id: {
+                notIn: tieredProducts.map(p => p.id)
+              }
+            },
+            include: { category: true },
+            orderBy: { price: "desc" }
+          })
+
+          if (mostExpensiveProduct) {
+            const premiumDiscountedPrice = Math.round(mostExpensiveProduct.price * 0.84 * 100) / 100 // 16% discount
+            const originalPrice = mostExpensiveProduct.price
+
+            tieredProducts.push({
+              id: mostExpensiveProduct.id,
+              name: mostExpensiveProduct.name,
+              slug: mostExpensiveProduct.slug,
+              image: mostExpensiveProduct.image,
+              originalPrice,
+              discountedPrice: premiumDiscountedPrice,
+              discount: 16,
+              savings: Math.round((originalPrice - premiumDiscountedPrice) * 100) / 100,
+              category: mostExpensiveProduct.category.name,
+              range: "premium"
+            })
+          }
+        }
+
 
     return NextResponse.json({
       category: categoryInfo,
