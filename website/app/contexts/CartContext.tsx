@@ -15,6 +15,8 @@ interface CartContextType {
   refreshCart: () => Promise<void>
   getTotalPrice: () => number
   getTotalItems: () => number
+  getVolumeDiscount: () => number
+  getFinalTotal: () => number
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -132,6 +134,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return cartItems.reduce((total, item) => total + item.quantity, 0)
   }
 
+  const getVolumeDiscount = () => {
+    // Apply 1.5% additional discount if more than 1 product in cart
+    const uniqueProducts = cartItems.length
+    return uniqueProducts > 1 ? 0.015 : 0 // 1.5% = 0.015
+  }
+
+  const getFinalTotal = () => {
+    const subtotal = getTotalPrice()
+    const volumeDiscount = getVolumeDiscount()
+    return subtotal * (1 - volumeDiscount)
+  }
+
   return (
     <CartContext.Provider
       value={{
@@ -144,7 +158,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         refreshCart,
         getTotalPrice,
-        getTotalItems
+        getTotalItems,
+        getVolumeDiscount,
+        getFinalTotal
       }}
     >
       {children}

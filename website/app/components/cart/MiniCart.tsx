@@ -7,7 +7,7 @@ import { ShoppingCart, X, Trash2 } from "lucide-react"
 import { useCart } from "@/contexts/CartContext"
 
 export default function MiniCart() {
-  const { cartItems, cartCount, removeFromCart } = useCart()
+  const { cartItems, cartCount, removeFromCart, getTotalPrice, getVolumeDiscount, getFinalTotal } = useCart()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -22,7 +22,10 @@ export default function MiniCart() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
+  const subtotal = getTotalPrice()
+  const volumeDiscount = getVolumeDiscount()
+  const volumeDiscountAmount = subtotal * volumeDiscount
+  const finalTotal = getFinalTotal()
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -105,11 +108,25 @@ export default function MiniCart() {
               </div>
 
               <div className="p-4 border-t border-gray-200">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm font-medium text-gray-900">Subtotal:</span>
-                  <span className="text-lg font-semibold text-gray-900">
-                    ${subtotal.toFixed(2)}
-                  </span>
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Subtotal:</span>
+                    <span className="text-sm text-gray-900">${subtotal.toFixed(2)}</span>
+                  </div>
+                  
+                  {volumeDiscountAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-green-600">Volume Discount (1.5%):</span>
+                      <span className="text-sm text-green-600">-${volumeDiscountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center border-t border-gray-200 pt-2">
+                    <span className="text-sm font-medium text-gray-900">Total:</span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      ${finalTotal.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
                 
                 <div className="space-y-2">

@@ -5,12 +5,14 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { ShoppingCart, Plus, Minus, Trash2, ArrowLeft, CreditCard } from "lucide-react"
+import { ShoppingCart, Plus, Minus, Trash2, ArrowLeft, CreditCard, Tag } from "lucide-react"
 import { CartItemWithProduct } from "@/types"
+import { useCart } from "@/contexts/CartContext"
 
 export default function CartPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { getTotalPrice, getTotalItems, getVolumeDiscount, getFinalTotal } = useCart()
   const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
@@ -100,10 +102,13 @@ export default function CartPage() {
     }
   }
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-  const shipping = subtotal > 50 ? 0 : 9.99
-  const tax = subtotal * 0.08 // 8% tax
-  const total = subtotal + shipping + tax
+  const subtotal = getTotalPrice()
+  const volumeDiscount = getVolumeDiscount()
+  const volumeDiscountAmount = subtotal * volumeDiscount
+  const discountedSubtotal = getFinalTotal()
+  const shipping = discountedSubtotal > 50 ? 0 : 9.99
+  const tax = discountedSubtotal * 0.08 // 8% tax
+  const total = discountedSubtotal + shipping + tax
 
   if (status === "loading" || loading) {
     return (
@@ -131,6 +136,25 @@ export default function CartPage() {
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
         </div>
+
+        {/* Volume Discount Banner */}
+        {volumeDiscountAmount > 0 && (
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Tag className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-green-800">
+                  🎉 Volume Discount Active!
+                </h3>
+                <p className="mt-1 text-sm text-green-700">
+                  You're saving <strong>${volumeDiscountAmount.toFixed(2)}</strong> (1.5%) for having multiple products in your cart.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {cartItems.length === 0 ? (
           <div className="text-center py-12">
@@ -280,6 +304,16 @@ export default function CartPage() {
                     <span className="text-gray-600">Subtotal</span>
                     <span className="text-gray-900">${subtotal.toFixed(2)}</span>
                   </div>
+                  
+                  {volumeDiscountAmount > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <div className="flex items-center space-x-1">
+                        <Tag className="h-3 w-3 text-green-600" />
+                        <span className="text-green-600">Volume Discount (1.5%)</span>
+                      </div>
+                      <span className="text-green-600">-${volumeDiscountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                   
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Shipping</span>

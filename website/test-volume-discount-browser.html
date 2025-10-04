@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volume Discount Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .total-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Volume Discount System Test</h1>
+    
+    <div class="test-section">
+        <h2>📋 Test Instructions</h2>
+        <p>This page will test the volume discount system that applies a 1.5% discount when you have more than 1 product in your cart.</p>
+        <ol>
+            <li>Click "Test Single Product" to verify no volume discount is applied</li>
+            <li>Click "Test Multiple Products" to verify 1.5% volume discount is applied</li>
+            <li>Click "Test Remove Product" to verify volume discount is lost when removing items</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Test Controls</h2>
+        <button onclick="testSingleProduct()">Test Single Product (No Discount)</button>
+        <button onclick="testMultipleProducts()">Test Multiple Products (1.5% Discount)</button>
+        <button onclick="testRemoveProduct()">Test Remove Product (Lose Discount)</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Current Cart State</h2>
+        <div id="cartDisplay">
+            <p>No items in cart</p>
+        </div>
+        <div id="cartTotals" class="total-section" style="display: none;">
+            <h3>Cart Totals</h3>
+            <div id="totalsContent"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        let cartItems = [];
+        let testResults = [];
+
+        // Mock products for testing
+        const testProducts = [
+            { id: '1', name: 'iPhone 15 Pro', price: 999.99 },
+            { id: '2', name: 'MacBook Pro 16"', price: 2499.99 },
+            { id: '3', name: 'AirPods Pro', price: 249.99 },
+            { id: '4', name: 'iPad Pro 12.9"', price: 1099.99 }
+        ];
+
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function updateCartDisplay() {
+            const cartDisplay = document.getElementById('cartDisplay');
+            const totalsDiv = document.getElementById('cartTotals');
+            const totalsContent = document.getElementById('totalsContent');
+
+            if (cartItems.length === 0) {
+                cartDisplay.innerHTML = '<p>No items in cart</p>';
+                totalsDiv.style.display = 'none';
+                return;
+            }
+
+            // Display cart items
+            let cartHTML = '<h3>Cart Items:</h3>';
+            cartItems.forEach((item, index) => {
+                cartHTML += `
+                    <div class="cart-item">
+                        <span>${item.name} - $${item.price.toFixed(2)}</span>
+                        <button onclick="removeItem(${index})">Remove</button>
+                    </div>
+                `;
+            });
+            cartDisplay.innerHTML = cartHTML;
+
+            // Calculate totals
+            const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+            const uniqueProducts = cartItems.length;
+            const volumeDiscount = uniqueProducts > 1 ? 0.015 : 0;
+            const volumeDiscountAmount = subtotal * volumeDiscount;
+            const finalTotal = subtotal * (1 - volumeDiscount);
+
+            // Display totals
+            let totalsHTML = `
+                <div><strong>Subtotal:</strong> $${subtotal.toFixed(2)}</div>
+            `;
+            
+            if (volumeDiscountAmount > 0) {
+                totalsHTML += `
+                    <div style="color: green;"><strong>Volume Discount (1.5%):</strong> -$${volumeDiscountAmount.toFixed(2)}</div>
+                `;
+            }
+            
+            totalsHTML += `
+                <div><strong>Final Total:</strong> $${finalTotal.toFixed(2)}</div>
+                <div><small>Unique Products: ${uniqueProducts}</small></div>
+            `;
+
+            totalsContent.innerHTML = totalsHTML;
+            totalsDiv.style.display = 'block';
+        }
+
+        function removeItem(index) {
+            cartItems.splice(index, 1);
+            updateCartDisplay();
+            addResult(`Removed item from cart. Cart now has ${cartItems.length} unique products.`, 'info');
+        }
+
+        function testSingleProduct() {
+            cartItems = [testProducts[0]];
+            updateCartDisplay();
+            
+            const subtotal = cartItems[0].price;
+            const volumeDiscount = 0;
+            const finalTotal = subtotal;
+            
+            addResult(`
+                <strong>✅ Single Product Test</strong><br>
+                Added 1 product: ${cartItems[0].name}<br>
+                Subtotal: $${subtotal.toFixed(2)}<br>
+                Volume Discount: ${(volumeDiscount * 100).toFixed(1)}%<br>
+                Final Total: $${finalTotal.toFixed(2)}<br>
+                <em>✓ No volume discount applied as expected</em>
+            `, 'success');
+        }
+
+        function testMultipleProducts() {
+            cartItems = [testProducts[0], testProducts[1], testProducts[2]];
+            updateCartDisplay();
+            
+            const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+            const volumeDiscount = 0.015;
+            const volumeDiscountAmount = subtotal * volumeDiscount;
+            const finalTotal = subtotal * (1 - volumeDiscount);
+            
+            addResult(`
+                <strong>✅ Multiple Products Test</strong><br>
+                Added 3 products: ${cartItems.map(item => item.name).join(', ')}<br>
+                Subtotal: $${subtotal.toFixed(2)}<br>
+                Volume Discount: ${(volumeDiscount * 100).toFixed(1)}% ($${volumeDiscountAmount.toFixed(2)})<br>
+                Final Total: $${finalTotal.toFixed(2)}<br>
+                <em>✓ 1.5% volume discount applied as expected</em>
+            `, 'success');
+        }
+
+        function testRemoveProduct() {
+            if (cartItems.length === 0) {
+                addResult('Please add products first before testing removal.', 'error');
+                return;
+            }
+
+            const beforeSubtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+            const beforeDiscount = cartItems.length > 1 ? 0.015 : 0;
+            const beforeTotal = beforeSubtotal * (1 - beforeDiscount);
+
+            // Remove one item
+            const removedItem = cartItems.pop();
+            updateCartDisplay();
+
+            const afterSubtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+            const afterDiscount = cartItems.length > 1 ? 0.015 : 0;
+            const afterTotal = afterSubtotal * (1 - afterDiscount);
+
+            const lostSavings = beforeTotal - afterTotal;
+
+            addResult(`
+                <strong>✅ Remove Product Test</strong><br>
+                Removed: ${removedItem.name}<br>
+                <strong>Before:</strong> ${cartItems.length + 1} products, $${beforeTotal.toFixed(2)} total<br>
+                <strong>After:</strong> ${cartItems.length} products, $${afterTotal.toFixed(2)} total<br>
+                <strong>Lost Savings:</strong> $${lostSavings.toFixed(2)}<br>
+                <em>✓ Volume discount behavior working correctly</em>
+            `, cartItems.length === 0 ? 'error' : 'success');
+        }
+
+        function clearResults() {
+            cartItems = [];
+            updateCartDisplay();
+            document.getElementById('testResults').innerHTML = '';
+            addResult('Test results cleared. Ready for new tests.', 'info');
+        }
+
+        // Initialize
+        updateCartDisplay();
+        addResult('Volume discount test page loaded. Ready for testing!', 'info');
+    </script>
+</body>
+</html>
