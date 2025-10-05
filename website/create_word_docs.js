@@ -157,11 +157,11 @@ function createWordDocument(markdownFile, outputFile) {
 
 // Create English Word document
 console.log('📄 Creating English Word document...');
-createWordDocument('PROJECT_DOCUMENTATION_EN.md', 'PROJECT_DOCUMENTATION_EN.html');
+createWordDocument('THESIS_DOCUMENTATION_EN.md', 'THESIS_DOCUMENTATION_EN.html');
 
 // Create Greek Word document
 console.log('📄 Creating Greek Word document...');
-createWordDocument('PROJECT_DOCUMENTATION_GR.md', 'PROJECT_DOCUMENTATION_GR.html');
+createWordDocument('THESIS_DOCUMENTATION_GR.md', 'THESIS_DOCUMENTATION_GR.html');
 
 console.log('🎉 All Word documents created successfully!');
 console.log('');
